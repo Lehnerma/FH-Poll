@@ -1,0 +1,63 @@
+@use 'variables' as *;
+@use 'functions' as *;
+
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == sm {
+    @media (min-width: $breakpoint-sm) {
+      @content;
+    }
+  } @else if $breakpoint == md {
+    @media (min-width: $breakpoint-md) {
+      @content;
+    }
+  } @else if $breakpoint == lg {
+    @media (min-width: $breakpoint-lg) {
+      @content;
+    }
+  } @else if $breakpoint == xl {
+    @media (min-width: $breakpoint-xl) {
+      @content;
+    }
+  } @else {
+    @media (min-width: $breakpoint) {
+      @content;
+    }
+  }
+}
+
+@mixin flex-center($direction: row) {
+  display: flex;
+  flex-direction: $direction;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin animation($target: all, $time: $animation-time, $flow: ease-in-out) {
+  transition: $target $time $flow;
+}
+
+@mixin page-bg($color) {
+  background-color: $color;
+  min-height: 100dvh;
+  display: block;
+}
+
+@mixin f-title($size: rem(16px), $color: white, $weight: 400, $letter-spacing: 0) {
+  font-family: $f-title;
+  font-size: $size;
+  font-weight: $weight;
+  letter-spacing: $letter-spacing;
+  color: $color;
+
+  // text-box: trim-both cap text;
+}
+
+@mixin f-text($size: rem(16px), $color: white, $weight: 400, $letter-spacing: 0) {
+  font-family: $f-txt;
+  font-size: $size;
+  font-weight: $weight;
+  letter-spacing: $letter-spacing;
+  color: $color;
+
+  // text-box: trim-both cap text;
+}
