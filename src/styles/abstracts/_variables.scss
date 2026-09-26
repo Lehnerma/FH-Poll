@@ -6,6 +6,6 @@ $breakpoint-xl: 1200px;
 
 $animation-time: 0.3s;
 
-// Schriftarten werden nachgereicht
-$f-title: sans-serif;
-$f-txt: sans-serif;
+// Schriftarten (Dateien: public/assets/fonts, Einbindung: base/_fonts.scss)
+$f-title: 'JetBrains Mono', ui-monospace, monospace;
+$f-txt: 'Commissioner', system-ui, sans-serif;

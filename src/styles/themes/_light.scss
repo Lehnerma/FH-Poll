@@ -1,1 +1,27 @@
-// Farben Light-Theme – folgen aus dem Mockup
+@use '../abstracts' as *;
+
+// Light ist der Default; data-theme wird später per Service gesetzt.
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --color-bg: #{$paper-main};
+  --color-surface: #{$paper-surface};
+  --color-text: #{$ink-main};
+  --color-text-muted: #{$ink-main-06};
+  --color-divider: #{$ink-main-04};
+  --color-hover: #{$ink-main-01};
+  --color-hover-strong: #{$ink-main-02};
+  --color-accent: #{$red-main};
+  --color-accent-hover: #{$red-600};
+  --color-accent-active: #{$red-700};
+  --color-accent-soft: #{$red-100};
+  --color-accent-soft-text: #{$red-800};
+  --color-accent-link: #{$red-700};
+  --color-accent-2: #{$coral-main};
+  --color-on-accent: #{$paper-main};
+  --color-track: #{$neutral-300};
+  --color-placeholder: #{$neutral-200};
+  --color-placeholder-border: #{$neutral-500};
+  --color-shadow: #{rgba($neutral-900, 0.16)};
+}

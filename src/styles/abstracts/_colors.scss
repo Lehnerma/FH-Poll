@@ -1,0 +1,71 @@
+// Farben – Basis (aus dem Mockup "Modernist"). Erweiterbar: neue Farbe = $name-main + Alpha-Stufen.
+
+// Hauptfarben
+$red-main: #ec3013; // Akzent
+$coral-main: #e15b47; // Akzent 2
+$ink-main: #201e1d; // Text (Light)
+$paper-main: #f3f2f2; // Hintergrund (Light)
+$paper-surface: #eae9e9; // Flächen (Light)
+$charcoal-surface: #383535; // Flächen (Dark)
+
+// Alpha-Stufen: -01 = 10 % ... -09 = 90 %
+$red-main-01: rgba($red-main, 0.1);
+$red-main-02: rgba($red-main, 0.2);
+$red-main-03: rgba($red-main, 0.3);
+$red-main-04: rgba($red-main, 0.4);
+$red-main-05: rgba($red-main, 0.5);
+$red-main-06: rgba($red-main, 0.6);
+$red-main-07: rgba($red-main, 0.7);
+$red-main-08: rgba($red-main, 0.8);
+$red-main-09: rgba($red-main, 0.9);
+
+$coral-main-01: rgba($coral-main, 0.1);
+$coral-main-02: rgba($coral-main, 0.2);
+$coral-main-03: rgba($coral-main, 0.3);
+$coral-main-04: rgba($coral-main, 0.4);
+$coral-main-05: rgba($coral-main, 0.5);
+$coral-main-06: rgba($coral-main, 0.6);
+$coral-main-07: rgba($coral-main, 0.7);
+$coral-main-08: rgba($coral-main, 0.8);
+$coral-main-09: rgba($coral-main, 0.9);
+
+$ink-main-01: rgba($ink-main, 0.1);
+$ink-main-02: rgba($ink-main, 0.2);
+$ink-main-03: rgba($ink-main, 0.3);
+$ink-main-04: rgba($ink-main, 0.4);
+$ink-main-05: rgba($ink-main, 0.5);
+$ink-main-06: rgba($ink-main, 0.6);
+$ink-main-07: rgba($ink-main, 0.7);
+$ink-main-08: rgba($ink-main, 0.8);
+$ink-main-09: rgba($ink-main, 0.9);
+
+// Tonwert-Verläufe (100 = hell ... 900 = dunkel)
+$neutral-100: #f8f4f4;
+$neutral-200: #eae7e7;
+$neutral-300: #d7d3d3;
+$neutral-400: #bab6b6;
+$neutral-500: #9b9797;
+$neutral-600: #7d7979;
+$neutral-700: #605d5d;
+$neutral-800: #444141;
+$neutral-900: #2d2b2b;
+
+$red-100: #fff2ef;
+$red-200: #ffe0d9;
+$red-300: #ffc4b8;
+$red-400: #ff9783;
+$red-500: #ff563c;
+$red-600: #dd2b0f;
+$red-700: #ae1800;
+$red-800: #7c1405;
+$red-900: #4d170e;
+
+$coral-100: #fff2ef;
+$coral-200: #ffe0da;
+$coral-300: #ffc4b9;
+$coral-400: #ff9784;
+$coral-500: #ef6853;
+$coral-600: #c94b39;
+$coral-700: #9e3526;
+$coral-800: #71261b;
+$coral-900: #471d16;
