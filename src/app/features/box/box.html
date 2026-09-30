@@ -1,0 +1,76 @@
+<app-topbar title="Praxis" [backLink]="backLink()" backLabel="Boxen" />
+
+<main class="page" [class.page--narrow]="!unlocked()" [class.page--center]="!unlocked()">
+  @if (unlocked()) {
+    <h1 class="page__title">Box {{ box() }}</h1>
+
+    @if (praxis.error(); as error) {
+      <p class="card__error" role="alert">{{ error }}</p>
+    } @else if (!praxis.loaded()) {
+      <p class="page__lead" role="status">Lade Einträge…</p>
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <caption class="visually-hidden">
+            Einträge in Box
+            {{
+              box()
+            }}
+          </caption>
+          <thead>
+            <tr>
+              <th class="table__cell table__cell--head" scope="col">#</th>
+              <th class="table__cell table__cell--head" scope="col">ID</th>
+              <th class="table__cell table__cell--head" scope="col">Wert</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (entry of entries(); track entry.key; let position = $index) {
+              <tr>
+                <td class="table__cell">{{ position + 1 }}</td>
+                <td class="table__cell">{{ entry.code }}</td>
+                <td class="table__cell">{{ entry.value || '—' }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td class="table__cell" colspan="3">Keine Einträge in dieser Box.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  } @else {
+    <form class="card" (submit)="onUnlock(); $event.preventDefault()" novalidate>
+      <span class="card__kicker">Box {{ box() }}</span>
+      <h1 class="card__title">Passwort erforderlich</h1>
+
+      <div class="field">
+        <label class="field__label" for="box-password">Passwort</label>
+        <input
+          class="field__input"
+          id="box-password"
+          type="password"
+          autocomplete="off"
+          placeholder="••••••••"
+          aria-describedby="box-password-error"
+          [attr.aria-invalid]="
+            !!unlockError() || (unlockForm.password().invalid() && unlockForm.password().touched())
+          "
+          [formField]="unlockForm.password"
+        />
+        <p class="card__error" id="box-password-error" role="alert">
+          @if (unlockError()) {
+            {{ unlockError() }}
+          } @else if (unlockForm.password().touched() && unlockForm.password().errors().length) {
+            {{ unlockForm.password().errors()[0].message }}
+          }
+        </p>
+      </div>
+
+      <button type="submit" class="btn btn--primary btn--block" [disabled]="busy()">
+        Entsperren
+      </button>
+    </form>
+  }
+</main>

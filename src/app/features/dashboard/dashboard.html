@@ -1,0 +1,22 @@
+<app-topbar [title]="'Hallo ' + session.nickname()">
+  <button type="button" class="btn btn--ghost" (click)="changeName()">Name ändern</button>
+</app-topbar>
+
+<main class="page">
+  <h1 class="page__title">Dashboard</h1>
+
+  <div class="page__grid">
+    <!-- Umfragen folgen später -->
+    <div class="tile" aria-disabled="true">
+      <span class="tile__kicker">Route A</span>
+      <span class="tile__title">Umfragen</span>
+      <span class="tile__meta">Kommt bald</span>
+    </div>
+
+    <a class="tile" routerLink="/praxis">
+      <span class="tile__kicker">Route B</span>
+      <span class="tile__title">Praxis</span>
+      <span class="tile__meta">Zu den passwortgeschützten Boxen</span>
+    </a>
+  </div>
+</main>

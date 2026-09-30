@@ -1,0 +1,53 @@
+@use '../abstracts' as *;
+
+// Kachel bzw. Box-Button: <a class="tile"> oder <button class="tile">
+.tile {
+  @include animation(background-color border-color);
+
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  padding: $space-5;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  background: var(--color-bg);
+  border: 2px solid var(--color-divider);
+
+  &:hover:not([aria-disabled='true']) {
+    background: var(--color-accent-soft);
+    border-color: var(--color-accent);
+  }
+
+  &[aria-disabled='true'] {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  &--row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: $space-4;
+  }
+
+  &__kicker {
+    font-size: rem(11px);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-accent-link);
+  }
+
+  &__title {
+    font-family: $f-title;
+    font-weight: 700;
+    font-size: rem(18px);
+  }
+
+  &__meta {
+    font-size: rem(13px);
+    color: var(--color-text-muted);
+  }
+}

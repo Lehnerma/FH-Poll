@@ -1,0 +1,31 @@
+<app-topbar title="Poll" />
+
+<main class="page page--narrow page--center">
+  <form class="card" (submit)="onSubmit(); $event.preventDefault()" novalidate>
+    <span class="card__kicker">Willkommen</span>
+    <h1 class="card__title">Wie dürfen wir dich nennen?</h1>
+    <p class="card__text">Dein Name bleibt nur auf diesem Gerät gespeichert.</p>
+
+    <div class="field">
+      <label class="field__label" for="nickname">Name / Nickname</label>
+      <input
+        class="field__input"
+        id="nickname"
+        type="text"
+        autocomplete="nickname"
+        placeholder="z. B. Jonas"
+        aria-describedby="nickname-error"
+        [attr.aria-invalid]="loginForm.nickname().invalid() && loginForm.nickname().touched()"
+        [formField]="loginForm.nickname"
+      />
+      <p class="card__error" id="nickname-error" aria-live="polite">
+        @if (loginForm.nickname().touched() && loginForm.nickname().errors().length) {
+          {{ loginForm.nickname().errors()[0].message }}
+        }
+      </p>
+    </div>
+
+    <button type="submit" class="btn btn--primary btn--block">Weiter</button>
+    <a class="btn btn--ghost" routerLink="/admin/login">Admin-Login</a>
+  </form>
+</main>

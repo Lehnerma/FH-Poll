@@ -1,0 +1,25 @@
+@use '../../../styles/abstracts' as *;
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: $space-4;
+  padding: $space-3 $space-4;
+  border-bottom: 2px solid var(--color-divider);
+
+  &__brand {
+    @include f-title(rem(18px), var(--color-text), 700);
+
+    margin-right: auto;
+  }
+
+  &__link {
+    font-size: rem(14px);
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--color-accent-link);
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "poll": {
+      ".read": false,
+      ".write": false
+    },
+    "praxis": {
+      "entries": {
+        ".read": true,
+        ".write": "auth != null"
+      }
+    }
+  }
+}
