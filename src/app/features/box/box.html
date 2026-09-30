@@ -1,0 +1,51 @@
+<app-topbar title="Praxis" [backLink]="backLink()" backLabel="Boxen" />
+
+<main class="page" [class.page--narrow]="!unlocked()" [class.page--center]="!unlocked()">
+  @if (unlocked()) {
+    <div class="page__head">
+      <h1 class="page__title">Box {{ box() }}</h1>
+      <button type="button" class="btn btn--secondary" [disabled]="busy()" (click)="onRefresh()">
+        Aktualisieren
+      </button>
+    </div>
+    <p class="card__error" role="alert">{{ unlockError() }}</p>
+
+    <app-archive-table
+      [entries]="entries()"
+      [caption]="'Einträge in Box ' + box()"
+      emptyText="Keine Einträge in dieser Box."
+    />
+  } @else {
+    <form class="card" (submit)="onUnlock(); $event.preventDefault()" novalidate>
+      <span class="card__kicker">Box {{ box() }}</span>
+      <h1 class="card__title">Passwort erforderlich</h1>
+
+      <div class="field">
+        <label class="field__label" for="box-password">Passwort</label>
+        <input
+          class="field__input"
+          id="box-password"
+          type="password"
+          autocomplete="off"
+          placeholder="••••••••"
+          aria-describedby="box-password-error"
+          [attr.aria-invalid]="
+            !!unlockError() || (unlockForm.password().invalid() && unlockForm.password().touched())
+          "
+          [formField]="unlockForm.password"
+        />
+        <p class="card__error" id="box-password-error" role="alert">
+          @if (unlockError()) {
+            {{ unlockError() }}
+          } @else if (unlockForm.password().touched() && unlockForm.password().errors().length) {
+            {{ unlockForm.password().errors()[0].message }}
+          }
+        </p>
+      </div>
+
+      <button type="submit" class="btn btn--primary btn--block" [disabled]="busy()">
+        Entsperren
+      </button>
+    </form>
+  }
+</main>

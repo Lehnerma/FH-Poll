@@ -1,0 +1,19 @@
+// Lokale Schriften (public/assets/fonts). Weitere Schnitte: einfach einen Block ergänzen.
+
+@mixin font-face($family, $file, $weight) {
+  @font-face {
+    font-family: $family;
+    src: url('/assets/fonts/#{$file}') format('truetype');
+    font-weight: $weight;
+    font-style: normal;
+    font-display: swap;
+  }
+}
+
+@include font-face('JetBrains Mono', 'JetBrains_Mono/static/JetBrainsMono-Medium.ttf', 500);
+@include font-face('JetBrains Mono', 'JetBrains_Mono/static/JetBrainsMono-Bold.ttf', 700);
+@include font-face('JetBrains Mono', 'JetBrains_Mono/static/JetBrainsMono-ExtraBold.ttf', 800);
+@include font-face('Commissioner', 'Commissioner/static/Commissioner-Regular.ttf', 400);
+@include font-face('Commissioner', 'Commissioner/static/Commissioner-Medium.ttf', 500);
+@include font-face('Commissioner', 'Commissioner/static/Commissioner-SemiBold.ttf', 600);
+@include font-face('Commissioner', 'Commissioner/static/Commissioner-Bold.ttf', 700);

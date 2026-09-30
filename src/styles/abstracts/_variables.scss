@@ -6,6 +6,18 @@ $breakpoint-xl: 1200px;
 
 $animation-time: 0.3s;
 
-// Schriftarten werden nachgereicht
-$f-title: sans-serif;
-$f-txt: sans-serif;
+// Schriftarten (Dateien: public/assets/fonts, Einbindung: base/_fonts.scss)
+$f-title: 'JetBrains Mono', ui-monospace, monospace;
+$f-txt: 'Commissioner', system-ui, sans-serif;
+
+// Spacing (vorläufig, Mockup nur Richtwert)
+$space-1: 0.25rem;
+$space-2: 0.5rem;
+$space-3: 0.75rem;
+$space-4: 1rem;
+$space-5: 1.25rem;
+$space-6: 1.5rem;
+$space-8: 2rem;
+
+// Container-Breite (Desktop laut Mockup: max. 1044px)
+$container-max: 1044px;

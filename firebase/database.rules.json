@@ -1,0 +1,17 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "poll": {
+      ".read": false,
+      ".write": false
+    },
+    "praxis": {
+      "archive": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        ".indexOn": ["box"]
+      }
+    }
+  }
+}

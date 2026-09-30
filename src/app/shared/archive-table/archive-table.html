@@ -1,0 +1,51 @@
+<div class="table-wrap table-wrap--scroll">
+  <table class="table">
+    <caption class="visually-hidden">
+      {{
+        caption()
+      }}
+    </caption>
+    <thead>
+      <tr>
+        <th class="table__cell table__cell--head" scope="col">#</th>
+        @for (column of columns; track column.key) {
+          <th class="table__cell table__cell--head" scope="col">{{ column.label }}</th>
+        }
+        @if (editableBox()) {
+          <th class="table__cell table__cell--head" scope="col">Box</th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (entry of entries(); track entry.key; let position = $index) {
+        <tr>
+          <td class="table__cell">{{ position + 1 }}</td>
+          @for (column of columns; track column.key) {
+            <td class="table__cell">{{ entry.values[column.key] ?? '—' }}</td>
+          }
+          @if (editableBox()) {
+            <td class="table__cell">
+              <select
+                class="field__input field__input--compact"
+                [attr.aria-label]="'Box für ' + (entry.values.idLabor ?? entry.key)"
+                (change)="onBoxSelect(entry, $event)"
+              >
+                @for (option of boxes; track option.value) {
+                  <option [value]="option.value" [selected]="option.value === entry.box">
+                    {{ option.label }}
+                  </option>
+                }
+              </select>
+            </td>
+          }
+        </tr>
+      } @empty {
+        <tr>
+          <td class="table__cell" [attr.colspan]="columns.length + (editableBox() ? 2 : 1)">
+            {{ emptyText() }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

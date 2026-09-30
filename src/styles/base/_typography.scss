@@ -1,0 +1,16 @@
+@use '../abstracts' as *;
+
+body {
+  font-family: $f-txt;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: $f-title;
+}

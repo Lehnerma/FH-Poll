@@ -1,0 +1,11 @@
+@use '../abstracts' as *;
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: $space-1 $space-3;
+  font-size: rem(11px);
+  letter-spacing: 0.02em;
+  color: var(--color-text);
+  background: var(--color-hover-strong);
+}

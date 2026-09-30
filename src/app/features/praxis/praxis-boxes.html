@@ -1,0 +1,20 @@
+<app-topbar title="Praxis" backLink="/dashboard" backLabel="Dashboard" />
+
+<main class="page">
+  <p class="page__lead">Box wählen — Zugang jeweils per Passwort.</p>
+
+  <div class="page__grid page__grid--boxes">
+    @for (box of boxes; track box) {
+      <a
+        class="tile tile--row"
+        [routerLink]="'/box' + box"
+        [attr.aria-label]="
+          'Box ' + box + (access.isUnlocked(box) ? ', entsperrt' : ', passwortgeschützt')
+        "
+      >
+        <strong class="tile__title">Box {{ box }}</strong>
+        <span aria-hidden="true">{{ access.isUnlocked(box) ? '🔓' : '🔒' }}</span>
+      </a>
+    }
+  </div>
+</main>

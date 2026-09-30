@@ -1,0 +1,38 @@
+@use '../abstracts' as *;
+
+.table-wrap {
+  overflow-x: auto;
+  border: 2px solid var(--color-divider);
+
+  // Kopf fixiert, Inhalt vertikal und horizontal scrollbar (Archiv-Mockup)
+  &--scroll {
+    max-height: 60dvh;
+    overflow: auto;
+  }
+}
+
+.table {
+  width: 100%;
+  min-width: 26rem;
+  border-collapse: collapse;
+  font-size: rem(13px);
+
+  &__cell {
+    padding: $space-2 $space-3;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--color-divider);
+
+    &--head {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: var(--color-surface);
+      border-bottom-width: 2px;
+    }
+  }
+
+  &__row--active {
+    background: var(--color-accent-soft);
+  }
+}

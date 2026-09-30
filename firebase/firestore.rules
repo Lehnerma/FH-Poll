@@ -1,0 +1,11 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Alles gesperrt: Passwort-Hash (config/boxAccess) und Fehlversuche (attempts/*)
+    // lesen und schreiben nur die Cloud Functions (Admin SDK umgeht diese Rules).
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
