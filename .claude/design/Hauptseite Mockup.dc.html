@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="design_doc_mode" content="canvas">
+  <link rel="stylesheet" href="_ds/modernist-4da77354-88ee-461f-a73b-99ec55dc7131/styles.css">
+  <script src="_ds/modernist-4da77354-88ee-461f-a73b-99ec55dc7131/_ds_bundle.js"></script>
+  <style>
+    body { margin: 0; background: var(--color-neutral-200); font-family: var(--font-body); }
+    a { color: var(--color-accent-700); text-decoration: none; }
+    a:hover { color: var(--color-accent); text-decoration: underline; }
+    .frame { width: 360px; background: var(--color-bg); border: 2px solid var(--color-divider); display: flex; flex-direction: column; min-height: 720px; box-shadow: var(--shadow-md); }
+    .frame-body { flex: 1; padding: var(--space-4); display: flex; flex-direction: column; }
+    .flabel { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.55; margin-bottom: var(--space-2); }
+    .section-title { font-size: 20px; margin: 48px 0 4px; }
+    .dash-tile { border: 2px solid var(--color-divider); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-2); cursor: pointer; }
+    .dash-tile:hover { background: var(--color-accent-100); border-color: var(--color-accent); }
+    .box-btn { border: 2px solid var(--color-divider); padding: var(--space-4); text-align: left; cursor: pointer; background: var(--color-bg); font-family: var(--font-body); }
+    .box-btn:hover { border-color: var(--color-accent); background: var(--color-accent-100); }
+    .mini-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .mini-table th { text-align: left; padding: var(--space-2) var(--space-3); border-bottom: 2px solid var(--color-divider); background: var(--color-surface); }
+    .mini-table td { padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--color-divider); }
+    .desktop-frame { width: 1044px; max-width: 1044px; background: var(--color-bg); border: 2px solid var(--color-divider); box-shadow: var(--shadow-md); }
+    .section-sub { margin: 0 0 24px; opacity: 0.65; font-size: 14px; max-width: 640px; }
+  </style>
+</helmet>
+
+<div style="padding:48px;">
+  <h1 style="font-size:20px;margin:0 0 4px;">Hauptseite — Dashboard + Praxis</h1>
+  <p style="margin:0 0 32px;opacity:0.65;font-size:14px;max-width:640px;">Mobil-Mockup. Dashboard mit zwei Kacheln (Umfragen / Praxis) → Praxis-Seite mit 4 passwortgeschützten Boxen → Box-Detailansicht mit fortlaufender Nummerierung + ID.</p>
+
+  <div style="display:flex;gap:40px;flex-wrap:wrap;align-items:flex-start;">
+
+    <div>
+      <div class="flabel">1 · Dashboard (2 Kacheln)</div>
+      <div class="frame">
+        <nav class="nav"><span class="nav-brand">Hallo Jonas</span></nav>
+        <div class="frame-body" style="gap:var(--space-3);justify-content:center;">
+          <div class="dash-tile">
+            <div class="card-kicker">Route A</div>
+            <div class="card-title" style="font-size:18px;">Umfragen</div>
+            <div class="card-meta"><span>Zu deinen offenen Umfragen</span></div>
+          </div>
+          <div class="dash-tile">
+            <div class="card-kicker">Route B</div>
+            <div class="card-title" style="font-size:18px;">Praxis</div>
+            <div class="card-meta"><span>Zu den passwortgeschützten Boxen</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="flabel">2 · Praxis — Box-Auswahl</div>
+      <div class="frame">
+        <nav class="nav"><span class="nav-brand">Praxis</span><a href="#">← Dashboard</a></nav>
+        <div class="frame-body" style="gap:var(--space-3);">
+          <p style="font-size:13px;opacity:0.65;margin:0 0 var(--space-2);">Box wählen — Zugang jeweils per Passwort.</p>
+          <button type="button" class="box-btn">
+            <div style="display:flex;justify-content:space-between;align-items:center;"><strong>Box 1</strong><span style="opacity:0.5;">🔒</span></div>
+          </button>
+          <button type="button" class="box-btn">
+            <div style="display:flex;justify-content:space-between;align-items:center;"><strong>Box 2</strong><span style="opacity:0.5;">🔒</span></div>
+          </button>
+          <button type="button" class="box-btn">
+            <div style="display:flex;justify-content:space-between;align-items:center;"><strong>Box 3</strong><span style="opacity:0.5;">🔒</span></div>
+          </button>
+          <button type="button" class="box-btn">
+            <div style="display:flex;justify-content:space-between;align-items:center;"><strong>Box 4</strong><span style="opacity:0.5;">🔒</span></div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="flabel">3 · Praxis — Passwort-Abfrage (Box 2)</div>
+      <div class="frame">
+        <nav class="nav"><span class="nav-brand">Praxis</span><a href="#">← Boxen</a></nav>
+        <div class="frame-body" style="align-items:center;justify-content:center;">
+          <div class="card elev-sm" style="width:100%;">
+            <div class="card-kicker">Box 2</div>
+            <div class="card-title">Passwort erforderlich</div>
+            <div class="field"><label>Passwort</label><input class="input" type="password" placeholder="••••••••" /></div>
+            <button type="button" class="btn btn-primary btn-block">Entsperren</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="flabel">4 · Praxis — Box-Detail (entsperrt)</div>
+      <div class="frame">
+        <nav class="nav"><span class="nav-brand">Praxis</span><a href="#">← Boxen</a></nav>
+        <div class="frame-body">
+          <h2 style="font-size:18px;margin:0 0 var(--space-3);">Box 2</h2>
+          <div style="overflow-x:auto;border:2px solid var(--color-divider);">
+            <table class="mini-table" style="min-width:420px;">
+              <thead><tr><th>#</th><th>ID</th><th>Spalte …</th><th>Spalte …</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>OT-0144</td><td>—</td><td>—</td></tr>
+                <tr><td>2</td><td>OT-0149</td><td>—</td><td>—</td></tr>
+                <tr><td>3</td><td>OT-0151</td><td>—</td><td>—</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="font-size:12px;opacity:0.55;margin-top:var(--space-3);">Weitere Spalten folgen — Nummerierung läuft fortlaufend ab 1.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-title">Admin — Praxis-Boxen (kein Passwort, direkt editierbar)</div>
+  <p class="section-sub">Admin ist bereits eingeloggt: keine Passwort-Abfrage, direkter Zugriff auf alle Boxen inkl. Bearbeiten der Einträge.</p>
+  <div style="display:flex;gap:40px;flex-wrap:wrap;align-items:flex-start;">
+
+    <div>
+      <div class="flabel">5 · Admin — Box-Übersicht</div>
+      <div class="frame">
+        <nav class="nav"><span class="nav-brand">Praxis · Admin</span><a href="#">← Dashboard</a></nav>
+        <div class="frame-body" style="gap:var(--space-3);">
+          <button type="button" class="box-btn"><div style="display:flex;justify-content:space-between;"><strong>Box 1</strong><span class="tag tag-neutral">3 Einträge</span></div></button>
+          <button type="button" class="box-btn"><div style="display:flex;justify-content:space-between;"><strong>Box 2</strong><span class="tag tag-neutral">3 Einträge</span></div></button>
+          <button type="button" class="box-btn"><div style="display:flex;justify-content:space-between;"><strong>Box 3</strong><span class="tag tag-neutral">2 Einträge</span></div></button>
+          <button type="button" class="box-btn"><div style="display:flex;justify-content:space-between;"><strong>Box 4</strong><span class="tag tag-neutral">1 Eintrag</span></div></button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="flabel">6 · Admin — Box 1 Detail (bearbeitbar)</div>
+      <div class="frame">
+        <nav class="nav"><span class="nav-brand">Praxis · Admin</span><a href="#">← Boxen</a></nav>
+        <div class="frame-body">
+          <h2 style="font-size:18px;margin:0 0 var(--space-3);">Box 1</h2>
+          <div style="overflow-x:auto;border:2px solid var(--color-divider);">
+            <table class="mini-table" style="min-width:460px;">
+              <thead><tr><th>#</th><th>ID</th><th>Spalte …</th><th></th></tr></thead>
+              <tbody>
+                <tr style="background:var(--color-accent-100);"><td>1</td><td>LL-0134</td><td>—</td><td><button type="button" class="btn btn-secondary" style="font-size:12px;padding:4px 10px;">Bearbeiten</button></td></tr>
+                <tr><td>2</td><td>LL-0140</td><td>—</td><td><button type="button" class="btn btn-secondary" style="font-size:12px;padding:4px 10px;">Bearbeiten</button></td></tr>
+                <tr><td>3</td><td>LL-0155</td><td>—</td><td><button type="button" class="btn btn-secondary" style="font-size:12px;padding:4px 10px;">Bearbeiten</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="flabel">7 · Admin — Eintrag bearbeiten (LL-0134)</div>
+      <div class="frame">
+        <nav class="nav"><span class="nav-brand">Praxis · Admin</span><a href="#">← Box 1</a></nav>
+        <div class="frame-body">
+          <h2 style="font-size:18px;margin:0 0 var(--space-4);">Eintrag bearbeiten</h2>
+          <div class="field"><label>ID</label><input class="input" value="LL-0134" disabled /></div>
+          <div class="field"><label>Spalte …</label><input class="input" placeholder="Wert" /></div>
+          <div class="field"><label>Box-Zuordnung</label>
+            <select class="input"><option selected>Box 1</option><option>Box 2</option><option>Box 3</option><option>Box 4</option><option>Archiv</option></select>
+          </div>
+          <div style="display:flex;gap:var(--space-2);margin-top:auto;">
+            <button type="button" class="btn btn-primary" style="flex:1;">Speichern</button>
+            <button type="button" class="btn btn-ghost">Abbrechen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">Desktop (max. 1044px) — User-Dashboard &amp; Praxis</div>
+  <div style="display:flex;flex-direction:column;gap:32px;">
+
+    <div>
+      <div class="flabel">8 · Dashboard Desktop (2 Kacheln)</div>
+      <div class="desktop-frame">
+        <nav class="nav"><span class="nav-brand">Hallo Jonas</span></nav>
+        <div style="padding:var(--space-6);display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);max-width:640px;margin:0 auto;">
+          <div class="dash-tile"><div class="card-kicker">Route A</div><div class="card-title" style="font-size:18px;">Umfragen</div><div class="card-meta"><span>Zu deinen offenen Umfragen</span></div></div>
+          <div class="dash-tile"><div class="card-kicker">Route B</div><div class="card-title" style="font-size:18px;">Praxis</div><div class="card-meta"><span>Zu den passwortgeschützten Boxen</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="flabel">9 · Praxis Desktop — Box-Auswahl (User)</div>
+      <div class="desktop-frame">
+        <nav class="nav"><span class="nav-brand">Praxis</span><a href="#">← Dashboard</a></nav>
+        <div style="padding:var(--space-6);display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-3);">
+          <button type="button" class="box-btn"><div style="display:flex;justify-content:space-between;"><strong>Box 1</strong><span style="opacity:0.5;">🔒</span></div></button>
+          <button type="button" class="box-btn"><div style="display:flex;justify-content:space-between;"><strong>Box 2</strong><span style="opacity:0.5;">🔒</span></div></button>
+          <button type="button" class="box-btn"><div style="display:flex;justify-content:space-between;"><strong>Box 3</strong><span style="opacity:0.5;">🔒</span></div></button>
+          <button type="button" class="box-btn"><div style="display:flex;justify-content:space-between;"><strong>Box 4</strong><span style="opacity:0.5;">🔒</span></div></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">Desktop (max. 1044px) — Admin</div>
+  <div style="display:flex;flex-direction:column;gap:32px;">
+
+    <div>
+      <div class="flabel">10 · Admin Box-Übersicht Desktop</div>
+      <div class="desktop-frame">
+        <nav class="nav"><span class="nav-brand">Praxis · Admin</span><a href="#">← Dashboard</a></nav>
+        <div style="padding:var(--space-6);display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-3);">
+          <button type="button" class="box-btn"><div style="display:flex;justify-content:space-between;"><strong>Box 1</strong><span class="tag tag-neutral">3</span></div></button>
+          <button type="button" class="box-btn"><div style="display:flex;justify-content:space-between;"><strong>Box 2</strong><span class="tag tag-neutral">3</span></div></button>
+          <button type="button" class="box-btn"><div style="display:flex;justify-content:space-between;"><strong>Box 3</strong><span class="tag tag-neutral">2</span></div></button>
+          <button type="button" class="box-btn"><div style="display:flex;justify-content:space-between;"><strong>Box 4</strong><span class="tag tag-neutral">1</span></div></button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="flabel">11 · Admin Box 1 Detail + Bearbeiten Desktop</div>
+      <div class="desktop-frame">
+        <nav class="nav"><span class="nav-brand">Praxis · Admin</span><a href="#">← Boxen</a></nav>
+        <div style="padding:var(--space-6);display:grid;grid-template-columns:1.4fr 1fr;gap:var(--space-5);align-items:start;">
+          <div>
+            <h2 style="font-size:18px;margin:0 0 var(--space-3);">Box 1</h2>
+            <div style="overflow-x:auto;border:2px solid var(--color-divider);">
+              <table class="mini-table">
+                <thead><tr><th>#</th><th>ID</th><th>Spalte …</th><th></th></tr></thead>
+                <tbody>
+                  <tr style="background:var(--color-accent-100);"><td>1</td><td>LL-0134</td><td>—</td><td><button type="button" class="btn btn-secondary" style="font-size:12px;padding:4px 10px;">Bearbeiten</button></td></tr>
+                  <tr><td>2</td><td>LL-0140</td><td>—</td><td><button type="button" class="btn btn-secondary" style="font-size:12px;padding:4px 10px;">Bearbeiten</button></td></tr>
+                  <tr><td>3</td><td>LL-0155</td><td>—</td><td><button type="button" class="btn btn-secondary" style="font-size:12px;padding:4px 10px;">Bearbeiten</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card elev-sm">
+            <div class="card-kicker">Eintrag bearbeiten</div>
+            <div class="field"><label>ID</label><input class="input" value="LL-0134" disabled /></div>
+            <div class="field"><label>Spalte …</label><input class="input" placeholder="Wert" /></div>
+            <div class="field"><label>Box-Zuordnung</label>
+              <select class="input"><option selected>Box 1</option><option>Box 2</option><option>Box 3</option><option>Box 4</option><option>Archiv</option></select>
+            </div>
+            <div style="display:flex;gap:var(--space-2);"><button type="button" class="btn btn-primary" style="flex:1;">Speichern</button><button type="button" class="btn btn-ghost">Abbrechen</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+</body>
+</html>

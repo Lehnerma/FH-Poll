@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="_ds/modernist-4da77354-88ee-461f-a73b-99ec55dc7131/styles.css">
+  <script src="_ds/modernist-4da77354-88ee-461f-a73b-99ec55dc7131/_ds_bundle.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <style>
+    body { margin: 0; background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); }
+    a { color: var(--color-accent-700); text-decoration: none; }
+    a:hover { color: var(--color-accent); text-decoration: underline; }
+  </style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;flex-direction:column;">
+
+  <nav class="nav">
+    <span class="nav-brand">{{ appTitle }}</span>
+    <sc-if value="{{ showAdminEntry }}" hint-placeholder-val="{{ true }}">
+      <sc-if value="{{ isAdminRoute }}" hint-placeholder-val="{{ false }}">
+        <a href="#" onClick="{{ goToUser }}">Zur Umfrage</a>
+      </sc-if>
+      <sc-if value="{{ isUserRoute }}" hint-placeholder-val="{{ true }}">
+        <a href="#" onClick="{{ goToAdmin }}">Admin</a>
+      </sc-if>
+    </sc-if>
+  </nav>
+
+  <sc-if value="{{ setupNeeded }}" hint-placeholder-val="{{ false }}">
+    <div style="background:var(--color-accent-100);border-bottom:2px solid var(--color-divider);padding:var(--space-3) var(--space-4);font-size:13px;">
+      <strong>Setup nötig:</strong> Firebase-Projektdaten in der Komponente eintragen (Logik-Klasse, Konstante <code>FIREBASE_CONFIG</code>), damit Umfragen, Live-Votes und Admin-Login funktionieren.
+    </div>
+  </sc-if>
+
+  <main style="flex:1;width:100%;max-width:520px;margin:0 auto;padding:var(--space-5) var(--space-4) var(--space-8);box-sizing:border-box;">
+
+    <!-- ============ USER: nickname prompt ============ -->
+    <sc-if value="{{ showNicknamePrompt }}" hint-placeholder-val="{{ false }}">
+      <div class="card elev-sm">
+        <div class="card-kicker">Willkommen</div>
+        <div class="card-title">Wie dürfen wir dich nennen?</div>
+        <p class="card-body">Dein Name bleibt nur auf diesem Gerät gespeichert und wird nicht veröffentlicht — nur bei deinem Feedback vermerkt.</p>
+        <div class="field"><label for="nick-input">Name / Nickname</label>
+          <input class="input" id="nick-input" type="text" value="{{ nicknameDraft }}" onChange="{{ onNicknameChange }}" placeholder="z. B. Jonas" />
+        </div>
+        <button type="button" class="btn btn-primary btn-block" onClick="{{ saveNickname }}" disabled="{{ nicknameEmpty }}">Weiter</button>
+      </div>
+    </sc-if>
+
+    <!-- ============ USER: survey list ============ -->
+    <sc-if value="{{ showSurveyList }}" hint-placeholder-val="{{ false }}">
+      <h1 style="font-size:22px;margin:0 0 var(--space-1);">Hallo {{ nickname }}</h1>
+      <p style="margin:0 0 var(--space-5);opacity:0.7;font-size:14px;">Wähle eine Umfrage aus.</p>
+
+      <sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}">
+        <p style="opacity:0.6;">Lade Umfragen…</p>
+      </sc-if>
+
+      <sc-if value="{{ noOpenSurveys }}" hint-placeholder-val="{{ false }}">
+        <p style="opacity:0.6;">Aktuell keine offenen Umfragen.</p>
+      </sc-if>
+
+      <div style="display:grid;gap:var(--space-3);margin-bottom:var(--space-6);">
+        <sc-for list="{{ openSurveys }}" as="s" hint-placeholder-count="1">
+          <div class="card elev-sm" style="cursor:pointer;" onClick="{{ s.open }}">
+            <div class="card-kicker">Offen</div>
+            <div class="card-title">{{ s.question }}</div>
+            <div class="card-meta"><span>{{ s.optionCountLabel }} Antwortmöglichkeiten</span></div>
+          </div>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ hasAnsweredSurveys }}" hint-placeholder-val="{{ false }}">
+        <div class="hr" style="margin:var(--space-5) 0;"></div>
+        <div class="demo-head" style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;opacity:0.55;margin-bottom:var(--space-3);">Bereits beantwortet</div>
+        <div style="display:grid;gap:var(--space-2);">
+          <sc-for list="{{ answeredSurveys }}" as="s" hint-placeholder-count="0">
+            <div class="card" style="cursor:pointer;padding:var(--space-3);" onClick="{{ s.open }}">
+              <div class="card-title" style="font-size:14px;">{{ s.question }}</div>
+              <div class="card-meta"><span>Ergebnis ansehen</span></div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+    </sc-if>
+
+    <!-- ============ USER: survey detail (vote form) ============ -->
+    <sc-if value="{{ showVoteForm }}" hint-placeholder-val="{{ false }}">
+      <button type="button" class="btn btn-ghost" onClick="{{ backToList }}" style="margin-bottom:var(--space-4);">← Zurück</button>
+      <sc-if value="{{ selectedSurvey.imageUrl }}" hint-placeholder-val="{{ false }}">
+        <div class="grayscale" style="margin-bottom:var(--space-4);"><img src="{{ selectedSurvey.imageUrl }}" alt="" style="width:100%;display:block;object-fit:cover;max-height:280px;" /></div>
+      </sc-if>
+      <h1 style="font-size:20px;line-height:1.3;margin:0 0 var(--space-1);">{{ selectedSurvey.question }}</h1>
+      <p style="font-size:13px;opacity:0.6;margin:0 0 var(--space-4);">{{ selectedSurvey.typeHint }}</p>
+
+      <div style="display:grid;gap:var(--space-2);margin-bottom:var(--space-5);">
+        <sc-for list="{{ selectableOptions }}" as="opt" hint-placeholder-count="3">
+          <label class="radio" style="border:2px solid var(--color-divider);padding:var(--space-3);cursor:pointer;background:{{ opt.bg }};">
+            <input type="{{ selectedSurvey.inputType }}" checked="{{ opt.checked }}" onChange="{{ opt.toggle }}" />
+            <span class="dot"></span>{{ opt.text }}
+          </label>
+        </sc-for>
+      </div>
+
+      <button type="button" class="btn btn-primary btn-block" onClick="{{ submitVote }}" disabled="{{ voteDisabled }}">Absenden</button>
+    </sc-if>
+
+    <!-- ============ USER: results + feedback ============ -->
+    <sc-if value="{{ showResults }}" hint-placeholder-val="{{ false }}">
+      <button type="button" class="btn btn-ghost" onClick="{{ backToList }}" style="margin-bottom:var(--space-4);">← Zurück</button>
+      <h1 style="font-size:20px;line-height:1.3;margin:0 0 var(--space-4);">{{ selectedSurvey.question }}</h1>
+
+      <div class="tag tag-accent" style="margin-bottom:var(--space-4);">{{ participantLabel }}</div>
+
+      <div style="display:grid;gap:var(--space-3);margin-bottom:var(--space-6);">
+        <sc-for list="{{ resultOptions }}" as="opt" hint-placeholder-count="3">
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+              <span>{{ opt.text }}{{ opt.youMark }}</span><span>{{ opt.pctLabel }}</span>
+            </div>
+            <div style="height:10px;background:var(--color-neutral-200);">
+              <div style="height:100%;background:var(--color-accent);width:{{ opt.pctWidth }};"></div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ showFeedbackForm }}" hint-placeholder-val="{{ false }}">
+        <div class="hr" style="margin-bottom:var(--space-5);"></div>
+        <div class="card elev-sm">
+          <div class="card-kicker">Anonymes Feedback</div>
+          <div class="card-title">Wie fandest du diese Umfrage?</div>
+          <div style="display:flex;gap:6px;margin:var(--space-3) 0;">
+            <sc-for list="{{ stars }}" as="star" hint-placeholder-count="5">
+              <button type="button" onClick="{{ star.onClick }}" style="background:none;border:none;padding:0;cursor:pointer;color:{{ star.color }};" aria-label="Bewertung">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="{{ star.fill }}" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </button>
+            </sc-for>
+          </div>
+          <div class="field"><label for="fb-text">Kurzes Feedback (optional)</label>
+            <textarea class="input" id="fb-text" rows="3" value="{{ feedbackText }}" onChange="{{ onFeedbackChange }}" placeholder="Was fiel dir auf?"></textarea>
+          </div>
+          <div style="display:flex;gap:var(--space-2);">
+            <button type="button" class="btn btn-primary" style="flex:1;" onClick="{{ submitFeedback }}">Feedback senden</button>
+            <button type="button" class="btn btn-ghost" onClick="{{ skipFeedback }}">Überspringen</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ feedbackThanks }}" hint-placeholder-val="{{ false }}">
+        <p style="font-size:14px;opacity:0.7;">Danke für dein Feedback!</p>
+      </sc-if>
+    </sc-if>
+
+    <!-- ============ ADMIN: login ============ -->
+    <sc-if value="{{ showAdminLogin }}" hint-placeholder-val="{{ false }}">
+      <div class="card elev-sm" style="max-width:360px;margin:var(--space-6) auto;">
+        <div class="card-kicker">Admin</div>
+        <div class="card-title">Anmelden</div>
+        <div class="field"><label for="admin-email">E-Mail</label>
+          <input class="input" id="admin-email" type="email" value="{{ loginEmail }}" onChange="{{ onLoginEmailChange }}" /></div>
+        <div class="field"><label for="admin-pass">Passwort</label>
+          <input class="input" id="admin-pass" type="password" value="{{ loginPass }}" onChange="{{ onLoginPassChange }}" /></div>
+        <sc-if value="{{ authError }}" hint-placeholder-val="{{ false }}">
+          <p style="color:var(--color-accent-700);font-size:13px;margin:0 0 var(--space-3);">{{ authError }}</p>
+        </sc-if>
+        <button type="button" class="btn btn-primary btn-block" onClick="{{ doLogin }}">Anmelden</button>
+      </div>
+    </sc-if>
+
+    <!-- ============ ADMIN: dashboard list ============ -->
+    <sc-if value="{{ showAdminList }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-5);gap:var(--space-2);flex-wrap:wrap;">
+        <h1 style="font-size:20px;margin:0;">Umfragen</h1>
+        <div style="display:flex;gap:var(--space-2);">
+          <button type="button" class="btn btn-secondary" onClick="{{ doLogout }}">Abmelden</button>
+          <button type="button" class="btn btn-primary" onClick="{{ openCreate }}">+ Neue Umfrage</button>
+        </div>
+      </div>
+
+      <sc-if value="{{ noSurveysAtAll }}" hint-placeholder-val="{{ false }}">
+        <p style="opacity:0.6;">Noch keine Umfragen erstellt.</p>
+      </sc-if>
+
+      <div style="display:grid;gap:var(--space-3);">
+        <sc-for list="{{ allSurveys }}" as="s" hint-placeholder-count="2">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-2);">
+              <div class="card-title" style="font-size:15px;">{{ s.question }}</div>
+              <span class="tag {{ s.statusTagClass }}">{{ s.statusLabel }}</span>
+            </div>
+            <div class="card-meta"><span>{{ s.totalVotesLabel }}</span></div>
+            <div style="display:flex;gap:var(--space-2);margin-top:var(--space-3);flex-wrap:wrap;">
+              <button type="button" class="btn btn-secondary" onClick="{{ s.viewLive }}">Live-Votes</button>
+              <button type="button" class="btn btn-ghost" onClick="{{ s.toggleStatus }}">{{ s.toggleLabel }}</button>
+              <button type="button" class="btn btn-ghost" onClick="{{ s.remove }}">Löschen</button>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- ============ ADMIN: create survey ============ -->
+    <sc-if value="{{ showAdminCreate }}" hint-placeholder-val="{{ false }}">
+      <button type="button" class="btn btn-ghost" onClick="{{ closeCreate }}" style="margin-bottom:var(--space-4);">← Zurück</button>
+      <h1 style="font-size:20px;margin:0 0 var(--space-4);">Neue Umfrage</h1>
+
+      <div class="field"><label for="new-q">Frage</label>
+        <textarea class="input" id="new-q" rows="2" value="{{ newQuestion }}" onChange="{{ onNewQuestionChange }}" placeholder="Was möchtest du fragen?"></textarea></div>
+
+      <div class="field"><label for="new-img">Bild (optional)</label>
+        <input class="input" id="new-img" type="file" accept="image/*" onChange="{{ onNewImagePick }}" />
+      </div>
+      <sc-if value="{{ newImagePreview }}" hint-placeholder-val="{{ false }}">
+        <div class="grayscale" style="margin-bottom:var(--space-4);max-width:220px;"><img src="{{ newImagePreview }}" alt="" style="width:100%;display:block;" /></div>
+      </sc-if>
+
+      <div class="field"><label id="new-type-label">Antworttyp</label>
+        <div class="seg" role="radiogroup" aria-labelledby="new-type-label">
+          <label class="seg-opt"><input type="radio" name="new-type" checked="{{ isSingleType }}" onChange="{{ setSingleType }}" />Eine Antwort</label>
+          <label class="seg-opt"><input type="radio" name="new-type" checked="{{ isMultiType }}" onChange="{{ setMultiType }}" />Mehrere Antworten</label>
+        </div>
+      </div>
+
+      <div class="field"><label>Antwortoptionen (2–5)</label>
+        <div style="display:grid;gap:var(--space-2);">
+          <sc-for list="{{ newOptionRows }}" as="row" hint-placeholder-count="2">
+            <div style="display:flex;gap:var(--space-2);">
+              <input class="input" type="text" value="{{ row.value }}" onChange="{{ row.onChange }}" placeholder="Option {{ row.n }}" style="flex:1;" />
+              <sc-if value="{{ row.canRemove }}" hint-placeholder-val="{{ false }}">
+                <button type="button" class="btn btn-ghost btn-icon" aria-label="Entfernen" onClick="{{ row.remove }}">✕</button>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+        <sc-if value="{{ canAddOption }}" hint-placeholder-val="{{ true }}">
+          <button type="button" class="btn btn-secondary" onClick="{{ addOption }}" style="margin-top:var(--space-2);">+ Option hinzufügen</button>
+        </sc-if>
+      </div>
+
+      <label class="radio" style="margin:var(--space-3) 0;"><input type="checkbox" checked="{{ newFeedbackEnabled }}" onChange="{{ toggleFeedbackEnabled }}" /><span class="dot"></span>Feedback-Bereich für Teilnehmer aktivieren</label>
+
+      <sc-if value="{{ createError }}" hint-placeholder-val="{{ false }}">
+        <p style="color:var(--color-accent-700);font-size:13px;">{{ createError }}</p>
+      </sc-if>
+
+      <button type="button" class="btn btn-primary btn-block" onClick="{{ createSurvey }}" disabled="{{ creatingBusy }}">Umfrage erstellen</button>
+    </sc-if>
+
+    <!-- ============ ADMIN: live votes + feedback ============ -->
+    <sc-if value="{{ showAdminLive }}" hint-placeholder-val="{{ false }}">
+      <button type="button" class="btn btn-ghost" onClick="{{ closeLive }}" style="margin-bottom:var(--space-4);">← Zurück</button>
+      <h1 style="font-size:20px;margin:0 0 var(--space-2);">{{ liveSurvey.question }}</h1>
+      <div class="tag tag-accent" style="margin-bottom:var(--space-4);">{{ liveParticipantLabel }}</div>
+
+      <div style="display:grid;gap:var(--space-3);margin-bottom:var(--space-6);">
+        <sc-for list="{{ liveResultOptions }}" as="opt" hint-placeholder-count="3">
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+              <span>{{ opt.text }}</span><span>{{ opt.pctLabel }} · {{ opt.countLabel }}</span>
+            </div>
+            <div style="height:10px;background:var(--color-neutral-200);">
+              <div style="height:100%;background:var(--color-accent);width:{{ opt.pctWidth }};"></div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div class="hr" style="margin-bottom:var(--space-4);"></div>
+      <div class="card-kicker" style="margin-bottom:var(--space-3);">Feedback ({{ liveFeedbackCount }})</div>
+      <sc-if value="{{ noLiveFeedback }}" hint-placeholder-val="{{ false }}">
+        <p style="opacity:0.6;font-size:14px;">Noch kein Feedback.</p>
+      </sc-if>
+      <div style="display:grid;gap:var(--space-2);">
+        <sc-for list="{{ liveFeedback }}" as="fb" hint-placeholder-count="0">
+          <div class="card" style="padding:var(--space-3);">
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+              <strong>{{ fb.nickname }}</strong><span>{{ fb.starsLabel }}</span>
+            </div>
+            <sc-if value="{{ fb.text }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:0;font-size:14px;">{{ fb.text }}</p>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+  </main>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;appTitle&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;Umfrage&quot;, &quot;tsType&quot;: &quot;string&quot;}, &quot;showAdminEntry&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;}}">
+const FIREBASE_CONFIG = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+class Component extends DCLogic {
+  state = {
+    route: 'user', // 'user' | 'adminLogin' | 'admin'
+    adminSubview: 'list', // 'list' | 'create' | 'live'
+    setupNeeded: false,
+    loading: true,
+    surveys: [],
+    nickname: '',
+    nicknameDraft: '',
+    answers: {},
+    selectedSurveyId: null,
+    selections: [],
+    hasVoted: false,
+    feedbackDone: false,
+    feedbackThanks: false,
+    feedbackRating: 0,
+    feedbackText: '',
+    adminUser: null,
+    loginEmail: '',
+    loginPass: '',
+    authError: '',
+    newQuestion: '',
+    newOptions: ['', ''],
+    newType: 'single',
+    newFeedbackEnabled: true,
+    newImageFile: null,
+    newImagePreview: null,
+    createError: '',
+    creatingBusy: false,
+    liveSurveyId: null,
+    liveFeedback: []
+  };
+
+  componentDidMount() {
+    try {
+      const isPlaceholder = FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY';
+      if (isPlaceholder) { this.setState({ setupNeeded: true, loading: false }); return; }
+      if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      this.db = firebase.firestore();
+      this.auth = firebase.auth();
+      this.storage = firebase.storage();
+
+      this.db.collection('surveys').orderBy('createdAt', 'desc').onSnapshot(snap => {
+        const surveys = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        this.setState({ surveys, loading: false });
+      }, () => this.setState({ loading: false }));
+
+      this.auth.onAuthStateChanged(user => {
+        this.setState({ adminUser: user, route: user ? 'admin' : (this.state.route === 'admin' ? 'adminLogin' : this.state.route) });
+      });
+    } catch (e) {
+      this.setState({ setupNeeded: true, loading: false });
+    }
+
+    const savedNick = localStorage.getItem('survey_nickname') || '';
+    let savedAnswers = {};
+    try { savedAnswers = JSON.parse(localStorage.getItem('survey_answers') || '{}'); } catch (e) {}
+    this.setState({ nickname: savedNick, nicknameDraft: savedNick, answers: savedAnswers });
+  }
+
+  saveAnswers(answers) {
+    localStorage.setItem('survey_answers', JSON.stringify(answers));
+    this.setState({ answers });
+  }
+
+  // ---- nickname ----
+  onNicknameChange = e => this.setState({ nicknameDraft: e.target.value });
+  saveNickname = () => {
+    const n = this.state.nicknameDraft.trim();
+    if (!n) return;
+    localStorage.setItem('survey_nickname', n);
+    this.setState({ nickname: n });
+  };
+
+  // ---- nav ----
+  goToAdmin = () => this.setState({ route: this.state.adminUser ? 'admin' : 'adminLogin' });
+  goToUser = () => this.setState({ route: 'user' });
+  backToList = () => this.setState({ selectedSurveyId: null, hasVoted: false, selections: [], feedbackText: '', feedbackRating: 0, feedbackThanks: false });
+
+  openSurvey = (id) => {
+    const already = !!this.state.answers[id];
+    this.setState({ selectedSurveyId: id, selections: already ? (this.state.answers[id].selections || []) : [], hasVoted: already, feedbackThanks: already ? !!this.state.answers[id].feedbackDone : false });
+  };
+
+  toggleOption = (surveyId, optId, multi) => {
+    let sel = this.state.selections;
+    if (multi) {
+      sel = sel.includes(optId) ? sel.filter(x => x !== optId) : [...sel, optId];
+    } else {
+      sel = [optId];
+    }
+    this.setState({ selections: sel });
+  };
+
+  submitVote = () => {
+    const survey = this.state.surveys.find(s => s.id === this.state.selectedSurveyId);
+    const sel = this.state.selections;
+    if (!survey || !sel.length || !this.db) return;
+    const ref = this.db.collection('surveys').doc(survey.id);
+    this.db.runTransaction(async tx => {
+      const doc = await tx.get(ref);
+      const data = doc.data() || {};
+      const counts = Object.assign({}, data.optionCounts);
+      sel.forEach(id => { counts[id] = (counts[id] || 0) + 1; });
+      tx.update(ref, { optionCounts: counts, totalVotes: (data.totalVotes || 0) + 1 });
+    }).then(() => {
+      const answers = Object.assign({}, this.state.answers);
+      answers[survey.id] = { selections: sel, feedbackDone: false };
+      this.saveAnswers(answers);
+      this.setState({ hasVoted: true });
+    });
+  };
+
+  // ---- feedback ----
+  onFeedbackChange = e => this.setState({ feedbackText: e.target.value });
+  setStar = n => this.setState({ feedbackRating: n });
+  submitFeedback = () => {
+    const survey = this.state.surveys.find(s => s.id === this.state.selectedSurveyId);
+    if (!survey || !this.db) return;
+    this.db.collection('surveys').doc(survey.id).collection('feedback').add({
+      nickname: this.state.nickname,
+      text: this.state.feedbackText.trim(),
+      rating: this.state.feedbackRating,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => this.markFeedbackDone(survey.id));
+  };
+  skipFeedback = () => {
+    const survey = this.state.surveys.find(s => s.id === this.state.selectedSurveyId);
+    if (survey) this.markFeedbackDone(survey.id);
+  };
+  markFeedbackDone = (surveyId) => {
+    const answers = Object.assign({}, this.state.answers);
+    if (answers[surveyId]) answers[surveyId] = Object.assign({}, answers[surveyId], { feedbackDone: true });
+    this.saveAnswers(answers);
+    this.setState({ feedbackThanks: true, feedbackText: '', feedbackRating: 0 });
+  };
+
+  // ---- admin auth ----
+  onLoginEmailChange = e => this.setState({ loginEmail: e.target.value });
+  onLoginPassChange = e => this.setState({ loginPass: e.target.value });
+  doLogin = () => {
+    if (!this.auth) return;
+    this.auth.signInWithEmailAndPassword(this.state.loginEmail, this.state.loginPass)
+      .then(() => this.setState({ authError: '' }))
+      .catch(err => this.setState({ authError: 'Anmeldung fehlgeschlagen: ' + err.message }));
+  };
+  doLogout = () => { if (this.auth) this.auth.signOut(); this.setState({ route: 'user' }); };
+
+  // ---- admin create ----
+  openCreate = () => this.setState({ adminSubview: 'create', createError: '' });
+  closeCreate = () => this.setState({ adminSubview: 'list', newQuestion: '', newOptions: ['', ''], newType: 'single', newFeedbackEnabled: true, newImageFile: null, newImagePreview: null, createError: '' });
+  onNewQuestionChange = e => this.setState({ newQuestion: e.target.value });
+  setSingleType = () => this.setState({ newType: 'single' });
+  setMultiType = () => this.setState({ newType: 'multi' });
+  toggleFeedbackEnabled = () => this.setState({ newFeedbackEnabled: !this.state.newFeedbackEnabled });
+  onOptionChange = (i, val) => {
+    const opts = this.state.newOptions.slice();
+    opts[i] = val;
+    this.setState({ newOptions: opts });
+  };
+  addOption = () => {
+    if (this.state.newOptions.length >= 5) return;
+    this.setState({ newOptions: [...this.state.newOptions, ''] });
+  };
+  removeOption = (i) => {
+    if (this.state.newOptions.length <= 2) return;
+    this.setState({ newOptions: this.state.newOptions.filter((_, idx) => idx !== i) });
+  };
+  onNewImagePick = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => this.setState({ newImageFile: file, newImagePreview: reader.result });
+    reader.readAsDataURL(file);
+  };
+  createSurvey = () => {
+    const q = this.state.newQuestion.trim();
+    const opts = this.state.newOptions.map(o => o.trim()).filter(Boolean);
+    if (!q) { this.setState({ createError: 'Bitte eine Frage eingeben.' }); return; }
+    if (opts.length < 2 || opts.length > 5) { this.setState({ createError: 'Bitte 2 bis 5 Antwortoptionen angeben.' }); return; }
+    if (!this.db) { this.setState({ createError: 'Kein Backend verbunden.' }); return; }
+    this.setState({ creatingBusy: true, createError: '' });
+    const options = opts.map((text, i) => ({ id: 'opt' + i + '_' + Date.now(), text }));
+    const optionCounts = {};
+    options.forEach(o => { optionCounts[o.id] = 0; });
+    const save = (imageUrl) => {
+      this.db.collection('surveys').add({
+        question: q, imageUrl: imageUrl || null, type: this.state.newType, options, optionCounts,
+        totalVotes: 0, status: 'open', feedbackEnabled: this.state.newFeedbackEnabled,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => this.closeCreate()).finally(() => this.setState({ creatingBusy: false }));
+    };
+    if (this.state.newImageFile && this.storage) {
+      const ref = this.storage.ref('survey-images/' + Date.now() + '_' + this.state.newImageFile.name);
+      ref.put(this.state.newImageFile).then(snap => snap.ref.getDownloadURL()).then(save)
+        .catch(() => { this.setState({ createError: 'Bild-Upload fehlgeschlagen.', creatingBusy: false }); });
+    } else save(null);
+  };
+
+  // ---- admin list actions ----
+  toggleSurveyStatus = (survey) => {
+    if (!this.db) return;
+    this.db.collection('surveys').doc(survey.id).update({ status: survey.status === 'open' ? 'closed' : 'open' });
+  };
+  deleteSurvey = (survey) => {
+    if (!this.db) return;
+    if (this.unsubFeedback && this.state.liveSurveyId === survey.id) { this.unsubFeedback(); this.unsubFeedback = null; }
+    this.db.collection('surveys').doc(survey.id).delete();
+  };
+  openLive = (survey) => {
+    if (this.unsubFeedback) this.unsubFeedback();
+    this.setState({ adminSubview: 'live', liveSurveyId: survey.id, liveFeedback: [] });
+    if (this.db) {
+      this.unsubFeedback = this.db.collection('surveys').doc(survey.id).collection('feedback').orderBy('createdAt', 'desc').onSnapshot(snap => {
+        this.setState({ liveFeedback: snap.docs.map(d => d.data()) });
+      });
+    }
+  };
+  closeLive = () => {
+    if (this.unsubFeedback) { this.unsubFeedback(); this.unsubFeedback = null; }
+    this.setState({ adminSubview: 'list', liveSurveyId: null, liveFeedback: [] });
+  };
+
+  renderVals() {
+    const s = this.state;
+    const appTitle = this.props.appTitle || 'Umfrage';
+    const showAdminEntry = this.props.showAdminEntry ?? true;
+
+    const answered = s.answers;
+    const openSurveysRaw = s.surveys.filter(sv => sv.status === 'open' && !answered[sv.id]);
+    const answeredSurveysRaw = s.surveys.filter(sv => !!answered[sv.id]);
+
+    const mkOpen = (sv) => ({
+      question: sv.question,
+      optionCountLabel: (sv.options || []).length,
+      open: () => this.openSurvey(sv.id)
+    });
+
+    const selectedSurvey = s.surveys.find(sv => sv.id === s.selectedSurveyId) || null;
+    const already = selectedSurvey ? !!answered[selectedSurvey.id] : false;
+    const showVoteForm = !!selectedSurvey && !already && !s.hasVoted;
+    const showResults = !!selectedSurvey && (already || s.hasVoted);
+
+    let selectableOptions = [];
+    let voteDisabled = true;
+    if (showVoteForm) {
+      const multi = selectedSurvey.type === 'multi';
+      selectableOptions = (selectedSurvey.options || []).map(o => ({
+        text: o.text,
+        checked: s.selections.includes(o.id),
+        bg: s.selections.includes(o.id) ? 'var(--color-accent-100)' : 'transparent',
+        toggle: () => this.toggleOption(selectedSurvey.id, o.id, multi)
+      }));
+      voteDisabled = s.selections.length === 0;
+    }
+
+    let resultOptions = [];
+    let participantLabel = '';
+    let showFeedbackForm = false;
+    if (showResults) {
+      const total = selectedSurvey.totalVotes || 0;
+      const mySel = already ? (answered[selectedSurvey.id].selections || []) : s.selections;
+      resultOptions = (selectedSurvey.options || []).map(o => {
+        const count = (selectedSurvey.optionCounts || {})[o.id] || 0;
+        const pct = total ? Math.round((count / total) * 100) : 0;
+        return { text: o.text, pctLabel: pct + '%', pctWidth: pct + '%', youMark: mySel.includes(o.id) ? '  ✓' : '' };
+      });
+      participantLabel = total + (total === 1 ? ' Teilnehmer' : ' Teilnehmer');
+      const fbDone = already ? !!answered[selectedSurvey.id].feedbackDone : s.feedbackThanks;
+      showFeedbackForm = !!selectedSurvey.feedbackEnabled && !fbDone && !s.feedbackThanks;
+    }
+
+    const stars = [1, 2, 3, 4, 5].map(n => ({
+      onClick: () => this.setStar(n),
+      fill: n <= s.feedbackRating ? 'currentColor' : 'none',
+      color: n <= s.feedbackRating ? 'var(--color-accent)' : 'var(--color-neutral-500)'
+    }));
+
+    // admin list
+    const allSurveys = s.surveys.map(sv => ({
+      question: sv.question,
+      statusLabel: sv.status === 'open' ? 'Offen' : 'Geschlossen',
+      statusTagClass: sv.status === 'open' ? 'tag-accent' : 'tag-neutral',
+      totalVotesLabel: (sv.totalVotes || 0) + ' Stimmen',
+      toggleLabel: sv.status === 'open' ? 'Schließen' : 'Öffnen',
+      viewLive: () => this.openLive(sv),
+      toggleStatus: () => this.toggleSurveyStatus(sv),
+      remove: () => { if (window.confirm('Umfrage wirklich löschen?')) this.deleteSurvey(sv); }
+    }));
+
+    const newOptionRows = s.newOptions.map((val, i) => ({
+      value: val, n: i + 1,
+      onChange: (e) => this.onOptionChange(i, e.target.value),
+      canRemove: s.newOptions.length > 2,
+      remove: () => this.removeOption(i)
+    }));
+
+    const liveSurvey = s.surveys.find(sv => sv.id === s.liveSurveyId) || { question: '', options: [], optionCounts: {}, totalVotes: 0 };
+    const liveTotal = liveSurvey.totalVotes || 0;
+    const liveResultOptions = (liveSurvey.options || []).map(o => {
+      const count = (liveSurvey.optionCounts || {})[o.id] || 0;
+      const pct = liveTotal ? Math.round((count / liveTotal) * 100) : 0;
+      return { text: o.text, pctLabel: pct + '%', pctWidth: pct + '%', countLabel: count + ' Stimmen' };
+    });
+    const liveFeedback = s.liveFeedback.map(fb => ({
+      nickname: fb.nickname || 'Anonym',
+      text: fb.text,
+      starsLabel: '★'.repeat(fb.rating || 0) + '☆'.repeat(5 - (fb.rating || 0))
+    }));
+
+    const isAdminRoute = s.route === 'admin' || s.route === 'adminLogin';
+
+    return {
+      appTitle, showAdminEntry,
+      isAdminRoute, isUserRoute: !isAdminRoute,
+      goToAdmin: this.goToAdmin, goToUser: this.goToUser,
+      setupNeeded: s.setupNeeded,
+      showNicknamePrompt: s.route === 'user' && !s.nickname,
+      nicknameDraft: s.nicknameDraft, nicknameEmpty: !s.nicknameDraft.trim(),
+      onNicknameChange: this.onNicknameChange, saveNickname: this.saveNickname,
+      nickname: s.nickname,
+
+      showSurveyList: s.route === 'user' && !!s.nickname && !s.selectedSurveyId,
+      loading: s.loading,
+      noOpenSurveys: !s.loading && openSurveysRaw.length === 0,
+      openSurveys: openSurveysRaw.map(mkOpen),
+      hasAnsweredSurveys: answeredSurveysRaw.length > 0,
+      answeredSurveys: answeredSurveysRaw.map(mkOpen),
+
+      showVoteForm, selectedSurvey: selectedSurvey ? { ...selectedSurvey, typeHint: selectedSurvey.type === 'multi' ? 'Mehrfachauswahl möglich' : 'Bitte eine Antwort wählen', inputType: selectedSurvey.type === 'multi' ? 'checkbox' : 'radio' } : { question: '', imageUrl: null, typeHint: '', inputType: 'radio' },
+      selectableOptions, voteDisabled, submitVote: this.submitVote, backToList: this.backToList,
+
+      showResults, resultOptions, participantLabel,
+      showFeedbackForm, stars, feedbackText: s.feedbackText, onFeedbackChange: this.onFeedbackChange,
+      submitFeedback: this.submitFeedback, skipFeedback: this.skipFeedback, feedbackThanks: s.feedbackThanks && !showFeedbackForm,
+
+      showAdminLogin: s.route === 'adminLogin',
+      loginEmail: s.loginEmail, loginPass: s.loginPass, authError: s.authError,
+      onLoginEmailChange: this.onLoginEmailChange, onLoginPassChange: this.onLoginPassChange, doLogin: this.doLogin,
+
+      showAdminList: s.route === 'admin' && s.adminSubview === 'list',
+      noSurveysAtAll: allSurveys.length === 0,
+      allSurveys, openCreate: this.openCreate, doLogout: this.doLogout,
+
+      showAdminCreate: s.route === 'admin' && s.adminSubview === 'create',
+      newQuestion: s.newQuestion, onNewQuestionChange: this.onNewQuestionChange,
+      onNewImagePick: this.onNewImagePick, newImagePreview: s.newImagePreview,
+      isSingleType: s.newType === 'single', isMultiType: s.newType === 'multi',
+      setSingleType: this.setSingleType, setMultiType: this.setMultiType,
+      newOptionRows, canAddOption: s.newOptions.length < 5, addOption: this.addOption,
+      newFeedbackEnabled: s.newFeedbackEnabled, toggleFeedbackEnabled: this.toggleFeedbackEnabled,
+      createError: s.createError, creatingBusy: s.creatingBusy, createSurvey: this.createSurvey, closeCreate: this.closeCreate,
+
+      showAdminLive: s.route === 'admin' && s.adminSubview === 'live',
+      liveSurvey, liveParticipantLabel: liveTotal + ' Teilnehmer', liveResultOptions,
+      liveFeedbackCount: liveFeedback.length, noLiveFeedback: liveFeedback.length === 0, liveFeedback,
+      closeLive: this.closeLive
+    };
+  }
+}
+
+</script>
+</body>
+</html>
