@@ -1,0 +1,28 @@
+@use '../abstracts' as *;
+
+.table-wrap {
+  overflow-x: auto;
+  border: 2px solid var(--color-divider);
+}
+
+.table {
+  width: 100%;
+  min-width: 26rem;
+  border-collapse: collapse;
+  font-size: rem(13px);
+
+  &__cell {
+    padding: $space-2 $space-3;
+    text-align: left;
+    border-bottom: 1px solid var(--color-divider);
+
+    &--head {
+      background: var(--color-surface);
+      border-bottom-width: 2px;
+    }
+  }
+
+  &__row--active {
+    background: var(--color-accent-soft);
+  }
+}

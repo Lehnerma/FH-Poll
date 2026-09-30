@@ -1,0 +1,48 @@
+<app-topbar title="Poll" backLink="/login" backLabel="Zum User-Login" />
+
+<main class="page page--narrow page--center">
+  <form class="card" (submit)="onSubmit(); $event.preventDefault()" novalidate>
+    <span class="card__kicker">Admin</span>
+    <h1 class="card__title">Anmelden</h1>
+
+    <div class="field">
+      <label class="field__label" for="admin-email">E-Mail</label>
+      <input
+        class="field__input"
+        id="admin-email"
+        type="email"
+        autocomplete="username"
+        aria-describedby="admin-email-error"
+        [attr.aria-invalid]="loginForm.email().invalid() && loginForm.email().touched()"
+        [formField]="loginForm.email"
+      />
+      <p class="card__error" id="admin-email-error" aria-live="polite">
+        @if (loginForm.email().touched() && loginForm.email().errors().length) {
+          {{ loginForm.email().errors()[0].message }}
+        }
+      </p>
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="admin-password">Passwort</label>
+      <input
+        class="field__input"
+        id="admin-password"
+        type="password"
+        autocomplete="current-password"
+        aria-describedby="admin-password-error"
+        [attr.aria-invalid]="loginForm.password().invalid() && loginForm.password().touched()"
+        [formField]="loginForm.password"
+      />
+      <p class="card__error" id="admin-password-error" aria-live="polite">
+        @if (loginForm.password().touched() && loginForm.password().errors().length) {
+          {{ loginForm.password().errors()[0].message }}
+        }
+      </p>
+    </div>
+
+    <p class="card__error" role="alert">{{ authError() }}</p>
+
+    <button type="submit" class="btn btn--primary btn--block" [disabled]="busy()">Anmelden</button>
+  </form>
+</main>
