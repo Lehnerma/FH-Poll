@@ -1,15 +1,20 @@
-// Firebase-Projektdaten aus der Firebase-Konsole eintragen
-// (Projekteinstellungen → Allgemein → Meine Apps → SDK-Konfiguration).
-// Diese Werte sind öffentlich (Web-Config) – der Schutz läuft über die Security Rules.
 export const environment = {
   firebase: {
-    apiKey: 'REPLACE_ME',
-    authDomain: 'REPLACE_ME.firebaseapp.com',
-    databaseURL: 'https://REPLACE_ME-default-rtdb.europe-west1.firebasedatabase.app',
-    projectId: 'REPLACE_ME',
-    storageBucket: 'REPLACE_ME.firebasestorage.app',
-    messagingSenderId: 'REPLACE_ME',
-    appId: 'REPLACE_ME',
+    apiKey: 'AIzaSyCz1LmPDbNgZmd0Tu-1VB3F1jPK4XzJ1Ls',
+
+    authDomain: 'fh-liane.firebaseapp.com',
+
+    databaseURL: 'https://fh-liane-default-rtdb.europe-west1.firebasedatabase.app',
+
+    projectId: 'fh-liane',
+
+    storageBucket: 'fh-liane.firebasestorage.app',
+
+    messagingSenderId: '446714470384',
+
+    appId: '1:446714470384:web:e1dfee1839110207eb8735',
+
+    measurementId: 'G-BZRK6WTH4L',
   },
 } as const;
 
