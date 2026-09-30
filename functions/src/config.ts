@@ -15,6 +15,7 @@ export const ARCHIVE_PATH = 'praxis/archive';
  * bewusster Aufnahme hierher an die Box-User (Admin-Notizen o. Ä. bleiben sonst intern).
  */
 export const PUBLIC_FIELDS = [
+  'id',
   'labor',
   'probenjahr',
   'idLabor',
