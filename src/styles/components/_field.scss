@@ -5,6 +5,10 @@
   flex-direction: column;
   gap: $space-1;
 
+  &--narrow {
+    max-width: 20rem;
+  }
+
   &__label {
     font-size: rem(12px);
     color: var(--color-text-muted);
@@ -37,6 +41,12 @@
 
     &[aria-invalid='true'] {
       border-color: var(--color-accent);
+    }
+
+    &--compact {
+      min-height: 0;
+      padding: $space-1 $space-2;
+      font-size: rem(12px);
     }
   }
 }

@@ -7,9 +7,10 @@
       ".write": false
     },
     "praxis": {
-      "entries": {
-        ".read": true,
-        ".write": "auth != null"
+      "archive": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        ".indexOn": ["box"]
       }
     }
   }

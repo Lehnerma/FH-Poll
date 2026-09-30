@@ -1,0 +1,35 @@
+<app-topbar title="Praxis · Admin" backLink="/admin/praxis" backLabel="Boxen" />
+
+<main class="page">
+  <h1 class="page__title">Archiv</h1>
+  <p class="page__lead">
+    Alle Einträge. Standard ist „Archiv“, eine Box ist optional. Nur Einträge in einer Box sind für
+    User nach Passworteingabe sichtbar.
+  </p>
+
+  <div class="field field--narrow">
+    <label class="field__label" for="archive-search">Suche (Labor, ID, Jahr …)</label>
+    <input
+      class="field__input"
+      id="archive-search"
+      type="search"
+      placeholder="z. B. OT-0145 oder Graz"
+      [formField]="searchForm.query"
+    />
+  </div>
+
+  @if (archive.error(); as error) {
+    <p class="card__error" role="alert">{{ error }}</p>
+  } @else if (!archive.loaded()) {
+    <p class="page__lead" role="status">Lade Archiv…</p>
+  } @else {
+    <p class="card__error" role="alert">{{ saveError() }}</p>
+    <app-archive-table
+      [entries]="filtered()"
+      caption="Archiv"
+      [editableBox]="true"
+      emptyText="Keine Einträge gefunden."
+      (boxChange)="onBoxChange($event)"
+    />
+  }
+</main>
