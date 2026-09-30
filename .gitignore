@@ -44,3 +44,7 @@ __screenshots__/
 Thumbs.db
 
 .claude/worktrees/
+/environments/
+environment.ts
+src/environments/environment.ts
+.claude/design/
