@@ -2,7 +2,7 @@ import { InjectionToken, inject } from '@angular/core';
 import { FirebaseApp, initializeApp } from 'firebase/app';
 import { Auth, getAuth } from 'firebase/auth';
 import { Database, getDatabase } from 'firebase/database';
-import { Firestore, getFirestore } from 'firebase/firestore';
+import { Functions, getFunctions } from 'firebase/functions';
 import { environment } from '../../../environments/environment';
 
 const FIREBASE_APP = new InjectionToken<FirebaseApp>('FIREBASE_APP', {
@@ -18,7 +18,7 @@ export const FIREBASE_DATABASE = new InjectionToken<Database>('FIREBASE_DATABASE
   factory: (): Database => getDatabase(inject(FIREBASE_APP)),
 });
 
-/** Firestore: nur für die Box-Passwörter (Hash). */
-export const FIREBASE_FIRESTORE = new InjectionToken<Firestore>('FIREBASE_FIRESTORE', {
-  factory: (): Firestore => getFirestore(inject(FIREBASE_APP)),
+/** Cloud Functions (Box-Passwort setzen und Box entsperren), Region wie im Functions-Projekt. */
+export const FIREBASE_FUNCTIONS = new InjectionToken<Functions>('FIREBASE_FUNCTIONS', {
+  factory: (): Functions => getFunctions(inject(FIREBASE_APP), 'europe-west1'),
 });

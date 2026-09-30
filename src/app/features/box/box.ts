@@ -1,20 +1,21 @@
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormField, form, required, submit } from '@angular/forms/signals';
 import { BoxAccess, UnlockResult } from '../../core/box/box-access';
-import { PraxisEntries } from '../../core/praxis/praxis-entries';
 import { Session } from '../../core/session/session';
+import { ArchiveTable } from '../../shared/archive-table/archive-table';
 import { Topbar } from '../../shared/topbar/topbar';
 
 const UNLOCK_MESSAGES: Readonly<Record<UnlockResult, string>> = {
   ok: '',
   wrong: 'Falsches Passwort.',
-  'not-configured': 'Für diese Box ist noch kein Passwort hinterlegt.',
+  locked: 'Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen.',
+  'not-configured': 'Für die Boxen ist noch kein Passwort hinterlegt.',
 };
 
 /** Box-Ansicht für /box1 … /box4 (Boxnummer kommt aus den Routen-Daten). */
 @Component({
   selector: 'app-box',
-  imports: [FormField, Topbar],
+  imports: [ArchiveTable, FormField, Topbar],
   templateUrl: './box.html',
 })
 export class Box {
@@ -22,13 +23,9 @@ export class Box {
 
   private readonly session = inject(Session);
   private readonly access = inject(BoxAccess);
-  protected readonly praxis = inject(PraxisEntries);
 
-  /** Admin braucht kein Passwort. */
-  protected readonly unlocked = computed(
-    () => this.session.isAdmin() || this.access.isUnlocked(this.box()),
-  );
-  protected readonly entries = computed(() => this.praxis.forBox(this.box()));
+  protected readonly unlocked = computed(() => this.access.isUnlocked(this.box()));
+  protected readonly entries = computed(() => this.access.entries(this.box()));
   protected readonly backLink = computed(() =>
     this.session.isAdmin() ? '/admin/praxis' : '/praxis',
   );
@@ -40,35 +37,33 @@ export class Box {
   protected readonly unlockError = signal('');
   protected readonly busy = signal(false);
 
-  /** Startet die Live-Daten erst, wenn die Box entsperrt ist. */
-  constructor() {
-    effect(() => {
-      if (this.unlocked()) {
-        this.praxis.start();
-      }
-    });
-  }
-
   /** Prüft das eingegebene Passwort (Formular-Submit). */
   protected onUnlock(): void {
     submit(this.unlockForm, async () => {
       this.busy.set(true);
-      this.unlockError.set(await this.tryUnlock());
+      this.unlockError.set(
+        await this.run(() => this.access.unlock(this.box(), this.model().password)),
+      );
+      this.model.set({ password: '' });
       this.busy.set(false);
     });
   }
 
+  /** Lädt die Einträge der Box neu (Daten sind eine Momentaufnahme). */
+  protected async onRefresh(): Promise<void> {
+    this.busy.set(true);
+    this.unlockError.set(await this.run(() => this.access.refresh(this.box())));
+    this.busy.set(false);
+  }
+
   /**
-   * Versucht die Box zu entsperren.
+   * Führt eine Function-Abfrage aus und übersetzt das Ergebnis in eine Meldung.
+   * @param action Abfrage (entsperren oder neu laden)
    * @returns Fehlermeldung oder leerer String bei Erfolg
    */
-  private async tryUnlock(): Promise<string> {
+  private async run(action: () => Promise<UnlockResult>): Promise<string> {
     try {
-      const result = await this.access.unlock(this.box(), this.model().password);
-      if (result === 'ok') {
-        this.model.set({ password: '' });
-      }
-      return UNLOCK_MESSAGES[result];
+      return UNLOCK_MESSAGES[await action()];
     } catch {
       return 'Passwort konnte nicht geprüft werden. Bitte später erneut versuchen.';
     }

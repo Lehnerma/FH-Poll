@@ -3,91 +3,18 @@
 <main class="page">
   <h1 class="page__title">Box {{ box() }}</h1>
 
-  <div class="admin-box">
-    <div>
-      @if (praxis.error(); as error) {
-        <p class="card__error" role="alert">{{ error }}</p>
-      } @else if (!praxis.loaded()) {
-        <p class="page__lead" role="status">Lade Einträge…</p>
-      } @else {
-        <div class="table-wrap">
-          <table class="table">
-            <caption class="visually-hidden">
-              Einträge in Box
-              {{
-                box()
-              }}
-            </caption>
-            <thead>
-              <tr>
-                <th class="table__cell table__cell--head" scope="col">#</th>
-                <th class="table__cell table__cell--head" scope="col">ID</th>
-                <th class="table__cell table__cell--head" scope="col">Wert</th>
-                <th class="table__cell table__cell--head" scope="col">
-                  <span class="visually-hidden">Aktionen</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (entry of entries(); track entry.key; let position = $index) {
-                <tr [class.table__row--active]="selected()?.key === entry.key">
-                  <td class="table__cell">{{ position + 1 }}</td>
-                  <td class="table__cell">{{ entry.code }}</td>
-                  <td class="table__cell">{{ entry.value || '—' }}</td>
-                  <td class="table__cell">
-                    <button
-                      type="button"
-                      class="btn btn--secondary btn--small"
-                      [attr.aria-label]="entry.code + ' bearbeiten'"
-                      (click)="edit(entry)"
-                    >
-                      Bearbeiten
-                    </button>
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td class="table__cell" colspan="4">Keine Einträge in dieser Box.</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      }
-    </div>
-
-    @if (selected(); as entry) {
-      <form class="card" (submit)="onSave(); $event.preventDefault()">
-        <span class="card__kicker">Eintrag bearbeiten</span>
-
-        <div class="field">
-          <label class="field__label" for="entry-code">ID</label>
-          <input class="field__input" id="entry-code" [value]="entry.code" disabled />
-        </div>
-
-        <div class="field">
-          <label class="field__label" for="entry-value">Wert</label>
-          <input class="field__input" id="entry-value" type="text" [formField]="editForm.value" />
-        </div>
-
-        <div class="field">
-          <label class="field__label" for="entry-box">Box-Zuordnung</label>
-          <select class="field__input" id="entry-box" [formField]="editForm.box">
-            @for (option of boxOptions; track option) {
-              <option [value]="option">
-                {{ option === 'archiv' ? 'Archiv' : 'Box ' + option }}
-              </option>
-            }
-          </select>
-        </div>
-
-        <p class="card__error" role="alert">{{ saveError() }}</p>
-
-        <div class="admin-box__actions">
-          <button type="submit" class="btn btn--primary">Speichern</button>
-          <button type="button" class="btn btn--ghost" (click)="cancel()">Abbrechen</button>
-        </div>
-      </form>
-    }
-  </div>
+  @if (archive.error(); as error) {
+    <p class="card__error" role="alert">{{ error }}</p>
+  } @else if (!archive.loaded()) {
+    <p class="page__lead" role="status">Lade Einträge…</p>
+  } @else {
+    <p class="card__error" role="alert">{{ saveError() }}</p>
+    <app-archive-table
+      [entries]="entries()"
+      [caption]="'Einträge in Box ' + box()"
+      [editableBox]="true"
+      emptyText="Keine Einträge in dieser Box."
+      (boxChange)="onBoxChange($event)"
+    />
+  }
 </main>

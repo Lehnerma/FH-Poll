@@ -2,44 +2,19 @@
 
 <main class="page" [class.page--narrow]="!unlocked()" [class.page--center]="!unlocked()">
   @if (unlocked()) {
-    <h1 class="page__title">Box {{ box() }}</h1>
+    <div class="page__head">
+      <h1 class="page__title">Box {{ box() }}</h1>
+      <button type="button" class="btn btn--secondary" [disabled]="busy()" (click)="onRefresh()">
+        Aktualisieren
+      </button>
+    </div>
+    <p class="card__error" role="alert">{{ unlockError() }}</p>
 
-    @if (praxis.error(); as error) {
-      <p class="card__error" role="alert">{{ error }}</p>
-    } @else if (!praxis.loaded()) {
-      <p class="page__lead" role="status">Lade Einträge…</p>
-    } @else {
-      <div class="table-wrap">
-        <table class="table">
-          <caption class="visually-hidden">
-            Einträge in Box
-            {{
-              box()
-            }}
-          </caption>
-          <thead>
-            <tr>
-              <th class="table__cell table__cell--head" scope="col">#</th>
-              <th class="table__cell table__cell--head" scope="col">ID</th>
-              <th class="table__cell table__cell--head" scope="col">Wert</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (entry of entries(); track entry.key; let position = $index) {
-              <tr>
-                <td class="table__cell">{{ position + 1 }}</td>
-                <td class="table__cell">{{ entry.code }}</td>
-                <td class="table__cell">{{ entry.value || '—' }}</td>
-              </tr>
-            } @empty {
-              <tr>
-                <td class="table__cell" colspan="3">Keine Einträge in dieser Box.</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    }
+    <app-archive-table
+      [entries]="entries()"
+      [caption]="'Einträge in Box ' + box()"
+      emptyText="Keine Einträge in dieser Box."
+    />
   } @else {
     <form class="card" (submit)="onUnlock(); $event.preventDefault()" novalidate>
       <span class="card__kicker">Box {{ box() }}</span>

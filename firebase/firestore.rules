@@ -2,10 +2,10 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Box-Passwörter: nur Salt + Hash. Lesen für alle (Prüfung im Client), Schreiben nur Admin.
-    match /boxes/{box} {
-      allow read: if true;
-      allow write: if request.auth != null;
+    // Alles gesperrt: Passwort-Hash (config/boxAccess) und Fehlversuche (attempts/*)
+    // lesen und schreiben nur die Cloud Functions (Admin SDK umgeht diese Rules).
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

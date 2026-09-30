@@ -2,8 +2,9 @@ import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormField, form, minLength, submit } from '@angular/forms/signals';
 import { BOX_NUMBERS } from '../../../../environments/environment';
+import { Archive } from '../../../core/archive/archive';
+import { boxName } from '../../../core/archive/archive-entry';
 import { BoxAccess } from '../../../core/box/box-access';
-import { PraxisEntries } from '../../../core/praxis/praxis-entries';
 import { Topbar } from '../../../shared/topbar/topbar';
 
 @Component({
@@ -13,7 +14,7 @@ import { Topbar } from '../../../shared/topbar/topbar';
 })
 export class AdminBoxes {
   private readonly access = inject(BoxAccess);
-  protected readonly praxis = inject(PraxisEntries);
+  protected readonly archive = inject(Archive);
   protected readonly boxes = BOX_NUMBERS;
 
   private readonly model = signal({ password: '' });
@@ -23,9 +24,9 @@ export class AdminBoxes {
   protected readonly passwordMessage = signal('');
   protected readonly passwordFailed = signal(false);
 
-  /** Startet die Live-Daten (für die Zähler je Box). */
+  /** Startet die Live-Daten (für die Zähler). */
   constructor() {
-    this.praxis.start();
+    this.archive.start();
   }
 
   /**
@@ -34,8 +35,15 @@ export class AdminBoxes {
    * @returns z. B. "3 Einträge"
    */
   protected countLabel(box: number): string {
-    const count = this.praxis.counts().get(box) ?? 0;
-    return count === 1 ? '1 Eintrag' : `${count} Einträge`;
+    return this.label(this.archive.counts().get(boxName(box)) ?? 0);
+  }
+
+  /**
+   * Beschriftung mit der Anzahl der Einträge im Archiv (noch keiner Box zugeordnet).
+   * @returns z. B. "12 Einträge"
+   */
+  protected archiveLabel(): string {
+    return this.label(this.archive.counts().get('archiv') ?? 0);
   }
 
   /** Setzt das neue Box-Passwort (Formular-Submit). */
@@ -43,7 +51,7 @@ export class AdminBoxes {
     submit(this.passwordForm, async () => {
       this.passwordMessage.set('');
       try {
-        await this.access.setPassword(this.boxes, this.model().password);
+        await this.access.setPassword(this.model().password);
         this.passwordFailed.set(false);
         this.passwordMessage.set('Passwort für alle Boxen gespeichert.');
         this.model.set({ password: '' });
@@ -52,5 +60,14 @@ export class AdminBoxes {
         this.passwordMessage.set('Passwort konnte nicht gespeichert werden.');
       }
     });
+  }
+
+  /**
+   * Formuliert eine Anzahl mit Singular/Plural.
+   * @param count Anzahl
+   * @returns "1 Eintrag" oder "n Einträge"
+   */
+  private label(count: number): string {
+    return count === 1 ? '1 Eintrag' : `${count} Einträge`;
   }
 }

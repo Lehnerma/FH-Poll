@@ -18,6 +18,14 @@
     min-height: calc(100dvh - 4rem);
   }
 
+  &__head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-3;
+    align-items: center;
+    justify-content: space-between;
+  }
+
   &__title {
     margin: 0;
     font-size: rem(22px);

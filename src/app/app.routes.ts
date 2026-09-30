@@ -57,6 +57,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/admin-boxes/admin-boxes').then((m) => m.AdminBoxes),
       },
+      {
+        path: 'archiv',
+        loadComponent: () =>
+          import('./features/admin/admin-archive/admin-archive').then((m) => m.AdminArchive),
+      },
       ...adminBoxRoutes,
     ],
   },
