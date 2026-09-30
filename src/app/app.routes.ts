@@ -58,6 +58,11 @@ export const routes: Routes = [
           import('./features/admin/admin-boxes/admin-boxes').then((m) => m.AdminBoxes),
       },
       {
+        path: 'probe-hinzufuegen',
+        loadComponent: () =>
+          import('./features/admin/admin-probe-add/admin-probe-add').then((m) => m.AdminProbeAdd),
+      },
+      {
         path: 'archiv',
         loadComponent: () =>
           import('./features/admin/admin-archive/admin-archive').then((m) => m.AdminArchive),

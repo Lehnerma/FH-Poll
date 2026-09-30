@@ -1,18 +1,26 @@
 /**
- * Spalten der Archiv-Tabelle (Realtime Database `praxis/archive/<pushId>`).
- * `required` = Pflichtfeld in der späteren Add-Form.
+ * Spalten der Archiv-Tabelle (Realtime Database `praxis/archive/<uuid>`).
+ * `required` = Pflichtfeld in der Add-Form, `type` = Datentyp in der Datenbank
+ * (`year` wird als Zahl gespeichert, alles andere als Text), `auto` = wird vom System vergeben.
  */
 export const ARCHIVE_COLUMNS = [
-  { key: 'labor', label: 'Labor', required: true },
-  { key: 'probenjahr', label: 'Probenabnahme-Jahr', required: true },
-  { key: 'idLabor', label: 'ID Labor', required: true },
-  { key: 'pap', label: 'PAP', required: true },
-  { key: 'bethesda', label: 'Bethesda', required: true },
-  { key: 'repraesentation', label: 'Repräsentation', required: true },
-  { key: 'anmerkung', label: 'Anmerkung', required: false },
-  { key: 'anmerkungObjekttraeger', label: 'Anmerkung Objektträger', required: false },
-  { key: 'notiz', label: 'Notiz', required: false },
-  { key: 'geburtsjahr', label: 'Geburtsjahr', required: true },
+  { key: 'id', label: 'ID', required: false, type: 'text', auto: true },
+  { key: 'labor', label: 'Labor', required: true, type: 'text', auto: false },
+  { key: 'probenjahr', label: 'Probenabnahme-Jahr', required: true, type: 'year', auto: false },
+  { key: 'idLabor', label: 'ID Labor', required: true, type: 'text', auto: false },
+  { key: 'pap', label: 'PAP', required: true, type: 'text', auto: false },
+  { key: 'bethesda', label: 'Bethesda', required: true, type: 'text', auto: false },
+  { key: 'repraesentation', label: 'Repräsentation', required: true, type: 'text', auto: false },
+  { key: 'anmerkung', label: 'Anmerkung', required: false, type: 'text', auto: false },
+  {
+    key: 'anmerkungObjekttraeger',
+    label: 'Anmerkung Objektträger',
+    required: false,
+    type: 'text',
+    auto: false,
+  },
+  { key: 'notiz', label: 'Notiz', required: false, type: 'text', auto: false },
+  { key: 'geburtsjahr', label: 'Geburtsjahr', required: true, type: 'year', auto: false },
 ] as const;
 
 export type ArchiveColumnKey = (typeof ARCHIVE_COLUMNS)[number]['key'];
@@ -89,4 +97,13 @@ export function sortByLaborId(entries: readonly ArchiveEntry[]): ArchiveEntry[] 
       numeric: true,
     }),
   );
+}
+
+/**
+ * Formatiert die fortlaufende Nummer als ID für Admin und User.
+ * @param counter Fortlaufende Nummer (ab 1)
+ * @returns z. B. "L001"
+ */
+export function formatArchiveId(counter: number): string {
+  return `L${String(counter).padStart(3, '0')}`;
 }

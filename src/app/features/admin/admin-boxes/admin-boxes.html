@@ -1,10 +1,12 @@
-<app-topbar title="Praxis · Admin" backLink="/admin" backLabel="Dashboard" />
+<app-topbar title="Objektträger · Admin" backLink="/admin" backLabel="Dashboard" />
 
 <main class="page">
   <a class="tile tile--row" routerLink="/admin/archiv">
     <strong class="tile__title">Archiv</strong>
     <span class="tag">{{ archiveLabel() }} ohne Box</span>
   </a>
+
+  <a class="btn btn--primary" routerLink="/admin/probe-hinzufuegen">Probe hinzufügen</a>
 
   <div class="page__grid page__grid--boxes">
     @for (box of boxes; track box) {

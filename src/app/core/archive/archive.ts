@@ -1,8 +1,15 @@
 import { Service, computed, inject, signal } from '@angular/core';
-import { DataSnapshot, onValue, ref, update } from 'firebase/database';
+import { DataSnapshot, onValue, ref, runTransaction, set, update } from 'firebase/database';
 import { DB_ROOT } from '../../../environments/environment';
 import { FIREBASE_DATABASE } from '../firebase/firebase';
-import { ArchiveBox, ArchiveEntry, sortByLaborId, toArchiveEntry } from './archive-entry';
+import {
+  ArchiveColumnKey,
+  ArchiveBox,
+  ArchiveEntry,
+  formatArchiveId,
+  sortByLaborId,
+  toArchiveEntry,
+} from './archive-entry';
 
 /**
  * Archiv-Tabelle für den Admin (live, nur mit Login lesbar).
@@ -61,6 +68,27 @@ export class Archive {
    */
   async setBox(key: string, box: ArchiveBox): Promise<void> {
     await update(ref(this.database, `${DB_ROOT.praxis}/archive/${key}`), { box });
+  }
+
+  /**
+   * Legt eine neue Probe im Archiv an: vergibt die nächste ID (L001, L002, …) und speichert
+   * den Eintrag unter einer neuen UUID. Der Zähler zählt nur hoch, eine ID wird nie doppelt
+   * vergeben (auch nicht, wenn der Eintrag später gelöscht wird oder das Speichern scheitert).
+   * @param values Werte der Spalten (ohne `id`); Jahre als Zahl, Rest als Text
+   * @returns Vergebene ID, z. B. "L001"
+   */
+  async addEntry(values: Partial<Record<ArchiveColumnKey, string | number>>): Promise<string> {
+    const counter = await runTransaction(
+      ref(this.database, `${DB_ROOT.praxis}/counters/archiveId`),
+      (current: number | null) => (current ?? 0) + 1,
+    );
+    const id = formatArchiveId(counter.snapshot.val() as number);
+    await set(ref(this.database, `${DB_ROOT.praxis}/archive/${crypto.randomUUID()}`), {
+      ...values,
+      id,
+      box: 'archiv',
+    });
+    return id;
   }
 
   /**

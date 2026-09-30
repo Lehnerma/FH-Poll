@@ -1,0 +1,44 @@
+<app-topbar title="Objektträger · Admin" backLink="/admin/praxis" backLabel="Objektträger" />
+
+<main class="page">
+  <h1 class="page__title">Probe hinzufügen</h1>
+  <p class="page__lead">
+    Pflichtfelder sind mit * markiert. Die ID (L001, L002 …) wird automatisch vergeben.
+  </p>
+
+  <form class="card" (submit)="onSubmit(); $event.preventDefault()" novalidate>
+    @for (column of columns; track column.key) {
+      <div class="field">
+        <label class="field__label" [for]="'probe-' + column.key">
+          {{ column.label }}{{ column.required ? ' *' : '' }}
+        </label>
+        <input
+          class="field__input"
+          type="text"
+          [id]="'probe-' + column.key"
+          [attr.inputmode]="column.type === 'year' ? 'numeric' : null"
+          [attr.aria-required]="column.required"
+          [attr.aria-invalid]="
+            probeForm[column.key]().invalid() && probeForm[column.key]().touched()
+          "
+          [attr.aria-describedby]="'probe-' + column.key + '-message'"
+          [formField]="probeForm[column.key]"
+        />
+        <p class="card__error" [id]="'probe-' + column.key + '-message'" aria-live="polite">
+          @if (probeForm[column.key]().touched() && probeForm[column.key]().errors().length) {
+            {{ probeForm[column.key]().errors()[0].message }}
+          }
+        </p>
+      </div>
+    }
+
+    @if (failed()) {
+      <p class="card__error" role="alert">Probe konnte nicht gespeichert werden.</p>
+    }
+    @if (savedId(); as id) {
+      <p class="card__text" role="status">Probe gespeichert mit ID {{ id }}.</p>
+    }
+
+    <button type="submit" class="btn btn--primary">Speichern</button>
+  </form>
+</main>

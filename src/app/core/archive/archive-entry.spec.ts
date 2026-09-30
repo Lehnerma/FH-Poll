@@ -1,4 +1,4 @@
-import { boxName, sortByLaborId, toArchiveEntry } from './archive-entry';
+import { boxName, formatArchiveId, sortByLaborId, toArchiveEntry } from './archive-entry';
 
 describe('archive-entry', () => {
   it('übernimmt bekannte Spalten und setzt fehlende auf null', () => {
@@ -32,5 +32,11 @@ describe('archive-entry', () => {
     const sorted = sortByLaborId(entries.filter((entry) => entry !== null));
 
     expect(sorted.map((entry) => entry.values.idLabor)).toEqual(['OT-1', 'OT-2', 'OT-10']);
+  });
+
+  it('formatiert die fortlaufende ID mit führenden Nullen', () => {
+    expect(formatArchiveId(1)).toBe('L001');
+    expect(formatArchiveId(42)).toBe('L042');
+    expect(formatArchiveId(1000)).toBe('L1000');
   });
 });

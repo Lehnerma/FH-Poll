@@ -11,6 +11,13 @@
         ".read": "auth != null",
         ".write": "auth != null",
         ".indexOn": ["box"]
+      },
+      "counters": {
+        "archiveId": {
+          ".read": "auth != null",
+          ".write": "auth != null",
+          ".validate": "newData.isNumber() && newData.val() == (data.exists() ? data.val() : 0) + 1"
+        }
       }
     }
   }
