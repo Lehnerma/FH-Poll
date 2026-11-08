@@ -1,10 +1,12 @@
 /** Jede Frage hat genau diese Anzahl Antwortmöglichkeiten (eine Auswahl). */
 export const OPTION_COUNT = 4;
 
+/** Vorausgefüllte Antworten einer neuen Frage (im Editor änderbar). */
+export const DEFAULT_OPTIONS: readonly string[] = ['NILM', 'LSIL', 'HSIL', 'Karzinom'];
+
 /** Foto einer Frage. `path` (Speicherort in Storage) kennt nur der Admin. */
 export interface SurveyPhoto {
   readonly url: string;
-  readonly alt: string;
   readonly path?: string;
 }
 
@@ -100,11 +102,11 @@ export function toSummary(id: string, raw: unknown): SurveySummary | null {
  * @returns Foto oder null, wenn keins (oder ein ungültiges) da ist
  */
 function toPhoto(raw: unknown): SurveyPhoto | null {
-  if (!isRecord(raw) || typeof raw['url'] !== 'string' || typeof raw['alt'] !== 'string') {
+  if (!isRecord(raw) || typeof raw['url'] !== 'string') {
     return null;
   }
   const path = typeof raw['path'] === 'string' ? { path: raw['path'] } : {};
-  return { url: raw['url'], alt: raw['alt'], ...path };
+  return { url: raw['url'], ...path };
 }
 
 /**

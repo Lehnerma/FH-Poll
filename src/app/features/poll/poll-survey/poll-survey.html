@@ -98,20 +98,12 @@
       }
     }
 
-    @case ('results') {
-      @if (survey(); as current) {
-        <h1 class="page__title">{{ current.title }}</h1>
-        <p class="page__lead" role="status">
-          {{
-            participatedBefore() ? 'Du hast bereits teilgenommen.' : 'Danke für deine Teilnahme!'
-          }}
-          Hier sind die Ergebnisse.
-        </p>
-      }
-      @if (results(); as current) {
-        <app-survey-results-view [results]="current" />
-      }
-      <a class="btn btn--ghost" routerLink="/umfragen">Zu den Umfragen</a>
+    @case ('participated') {
+      <section class="card" role="status">
+        <h1 class="card__title">Du hast bereits teilgenommen.</h1>
+        <p class="card__text">Du kannst diese Umfrage nur einmal ausfüllen.</p>
+        <a class="btn btn--ghost" routerLink="/umfragen">Zu den Umfragen</a>
+      </section>
     }
   }
 </main>

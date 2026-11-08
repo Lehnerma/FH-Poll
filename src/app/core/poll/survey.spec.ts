@@ -1,5 +1,14 @@
 import { photoProblem } from './poll-photos';
-import { nicknameKey, percent, toQuestions, toResults, toSummary, toSurvey } from './survey';
+import {
+  DEFAULT_OPTIONS,
+  OPTION_COUNT,
+  nicknameKey,
+  percent,
+  toQuestions,
+  toResults,
+  toSummary,
+  toSurvey,
+} from './survey';
 
 const rawQuestion = (id: string, extra: object = {}): object => ({
   id,
@@ -45,12 +54,18 @@ describe('survey', () => {
 
   describe('toQuestions', () => {
     it('liest Fragen mit und ohne Foto in gespeicherter Reihenfolge', () => {
-      const photo = { url: 'https://x/y.jpg', alt: 'Bild', path: 'polls/s1/a.jpg' };
+      const photo = { url: 'https://x/y.jpg', path: 'polls/s1/a.jpg' };
       const questions = toQuestions([rawQuestion('b'), rawQuestion('a', { photo })]);
 
       expect(questions.map((question) => question.id)).toEqual(['b', 'a']);
       expect(questions[0].photo).toBeNull();
       expect(questions[1].photo).toEqual(photo);
+    });
+
+    it('ignoriert eine früher gespeicherte Bildbeschreibung', () => {
+      const photo = { url: 'https://x/y.jpg', alt: 'alt' };
+
+      expect(toQuestions([rawQuestion('a', { photo })])[0].photo).toEqual({ url: photo.url });
     });
 
     it('verwirft Fragen ohne genau 4 Optionen', () => {
@@ -100,6 +115,13 @@ describe('survey', () => {
       expect(percent(1, 3)).toBe(33);
       expect(percent(2, 3)).toBe(67);
       expect(percent(0, 0)).toBe(0);
+    });
+  });
+
+  describe('DEFAULT_OPTIONS', () => {
+    it('enthält genau die vier Standardantworten', () => {
+      expect(DEFAULT_OPTIONS).toEqual(['NILM', 'LSIL', 'HSIL', 'Karzinom']);
+      expect(DEFAULT_OPTIONS).toHaveLength(OPTION_COUNT);
     });
   });
 

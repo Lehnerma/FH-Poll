@@ -4,7 +4,7 @@ import { PollAdmin } from '../../../core/poll/poll-admin';
 import { SurveyResultsView } from '../../../shared/survey-results-view/survey-results-view';
 import { Topbar } from '../../../shared/topbar/topbar';
 
-/** Admin-Seite /admin/umfragen/:id/ergebnisse: dieselbe Gesamtansicht wie bei den Usern. */
+/** Admin-Seite /admin/umfragen/:id/ergebnisse: Teilnehmerzahl, Fotos und Balken je Frage. */
 @Component({
   selector: 'app-admin-poll-results',
   imports: [RouterLink, SurveyResultsView, Topbar],
@@ -23,7 +23,12 @@ export class AdminPollResults {
         this.admin.load(params),
         this.admin.results(params),
       ]);
-      return { title: survey?.title ?? '', results };
+      const photos = Object.fromEntries(
+        (survey?.questions ?? []).flatMap((question) =>
+          question.photo ? [[question.id, question.photo.url]] : [],
+        ),
+      );
+      return { title: survey?.title ?? '', results, photos };
     },
   });
 }

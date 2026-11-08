@@ -115,7 +115,6 @@ export class AdminPollEdit {
   protected removePhoto(questionId: string): void {
     this.revoke(this.photoStates()[questionId]?.preview ?? null);
     this.photoStates.update((states) => withoutPhoto(states, questionId));
-    this.setHasPhoto(questionId, false);
   }
 
   /** Speichert die Umfrage (Formular-Submit) und geht zurück zur Liste. */
@@ -148,23 +147,6 @@ export class AdminPollEdit {
     this.photoStates.update((states) => ({
       ...states,
       [questionId]: { photo: previous?.photo ?? null, file, preview },
-    }));
-    this.setHasPhoto(questionId, true);
-  }
-
-  /**
-   * Merkt im Formular, ob die Frage ein Foto hat (dann ist die Bildbeschreibung Pflicht).
-   * @param questionId Schlüssel der Frage
-   * @param hasPhoto Hat die Frage ein Foto?
-   */
-  private setHasPhoto(questionId: string, hasPhoto: boolean): void {
-    this.model.update((model) => ({
-      ...model,
-      questions: model.questions.map((question) =>
-        question.id === questionId
-          ? { ...question, hasPhoto, photoAlt: hasPhoto ? question.photoAlt : '' }
-          : question,
-      ),
     }));
   }
 

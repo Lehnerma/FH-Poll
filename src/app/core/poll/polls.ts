@@ -4,15 +4,7 @@ import { FunctionsError } from 'firebase/functions';
 import { DB_ROOT } from '../../../environments/environment';
 import { callFunction } from '../firebase/call-function';
 import { FIREBASE_DATABASE, FIREBASE_FUNCTIONS } from '../firebase/firebase';
-import {
-  Survey,
-  SurveyAnswers,
-  SurveyResults,
-  SurveySummary,
-  toResults,
-  toSummary,
-  toSurvey,
-} from './survey';
+import { Survey, SurveyAnswers, SurveySummary, toSummary, toSurvey } from './survey';
 
 /** Warum eine Umfrage nicht geöffnet werden konnte. */
 export type AccessProblem = 'wrong' | 'locked' | 'closed' | 'not-configured' | 'not-found';
@@ -50,8 +42,8 @@ function toProblem(error: unknown): AccessProblem {
 
 /**
  * Umfragen für User (Realtime Database `poll/surveys` plus Cloud Functions).
- * Titel und Status sind öffentlich lesbar. Fragen, Fotos, Antworten und Ergebnisse liefert nur die
- * Function nach richtigem Passwort. Das Passwort (eins für alle Umfragen) bleibt im Arbeitsspeicher:
+ * Titel und Status sind öffentlich lesbar. Fragen, Fotos und Antworten laufen nur über die
+ * Functions nach richtigem Passwort; Ergebnisse sieht nur der Admin. Das Passwort (eins für alle Umfragen) bleibt im Arbeitsspeicher:
  * Seite neu laden = Passwort erneut eingeben.
  */
 @Service()
@@ -113,25 +105,6 @@ export class Polls {
       password: this.password(),
     });
     return data.result === 'saved' ? 'saved' : 'duplicate';
-  }
-
-  /**
-   * Lädt die Ergebnisse (nur nach eigener Teilnahme).
-   * @param surveyId Schlüssel der Umfrage
-   * @param nickname Nickname des Teilnehmers
-   * @returns Teilnehmerzahl und Stimmen je Option
-   */
-  async results(surveyId: string, nickname: string): Promise<SurveyResults> {
-    const raw = await callFunction<unknown>(this.functions, 'getSurveyResults', {
-      surveyId,
-      nickname,
-      password: this.password(),
-    });
-    const results = toResults(raw);
-    if (!results) {
-      throw new Error('invalid-results');
-    }
-    return results;
   }
 
   /**

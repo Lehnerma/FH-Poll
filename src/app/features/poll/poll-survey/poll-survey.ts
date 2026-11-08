@@ -1,15 +1,14 @@
 import { Component, OnInit, computed, inject, input, signal } from '@angular/core';
 import { FormField, form, required, submit } from '@angular/forms/signals';
-import { RouterLink } from '@angular/router';
-import { AccessProblem, OpenResult, Polls } from '../../../core/poll/polls';
-import { Survey, SurveyAnswers, SurveyResults } from '../../../core/poll/survey';
+import { Router, RouterLink } from '@angular/router';
+import { AccessProblem, OpenResult, Polls, SubmitResult } from '../../../core/poll/polls';
+import { Survey, SurveyAnswers } from '../../../core/poll/survey';
 import { Session } from '../../../core/session/session';
-import { SurveyResultsView } from '../../../shared/survey-results-view/survey-results-view';
 import { Topbar } from '../../../shared/topbar/topbar';
 import { PollQuestion } from '../poll-question/poll-question';
 
 type View =
-  'loading' | 'nickname' | 'password' | 'form' | 'results' | 'closed' | 'missing' | 'error';
+  'loading' | 'nickname' | 'password' | 'form' | 'participated' | 'closed' | 'missing' | 'error';
 
 const PASSWORD_MESSAGES: Readonly<Partial<Record<AccessProblem, string>>> = {
   wrong: 'Falsches Passwort.',
@@ -18,12 +17,12 @@ const PASSWORD_MESSAGES: Readonly<Partial<Record<AccessProblem, string>>> = {
 };
 
 /**
- * Seite /umfragen/:id. Ablauf: Passwort (einmal pro Sitzung) → Fragen beantworten → Ergebnisse.
- * Wer mit diesem Nickname schon teilgenommen hat, sieht direkt die Ergebnisse.
+ * Seite /umfragen/:id. Ablauf: Passwort (einmal pro Sitzung) → Fragen beantworten → zurück zur Liste.
+ * Wer mit diesem Nickname schon teilgenommen hat, sieht nur den Hinweis darauf. Ergebnisse sieht nur der Admin.
  */
 @Component({
   selector: 'app-poll-survey',
-  imports: [FormField, PollQuestion, RouterLink, SurveyResultsView, Topbar],
+  imports: [FormField, PollQuestion, RouterLink, Topbar],
   templateUrl: './poll-survey.html',
 })
 export class PollSurvey implements OnInit {
@@ -32,15 +31,14 @@ export class PollSurvey implements OnInit {
 
   private readonly polls = inject(Polls);
   private readonly session = inject(Session);
+  private readonly router = inject(Router);
 
   protected readonly nickname = this.session.nickname;
   protected readonly view = signal<View>('loading');
   protected readonly survey = signal<Survey | null>(null);
-  protected readonly results = signal<SurveyResults | null>(null);
   protected readonly answers = signal<SurveyAnswers>({});
   protected readonly busy = signal(false);
   protected readonly failed = signal(false);
-  protected readonly participatedBefore = signal(false);
   protected readonly passwordError = signal('');
 
   private readonly model = signal({ password: '' });
@@ -92,13 +90,21 @@ export class PollSurvey implements OnInit {
     this.failed.set(false);
     try {
       const result = await this.polls.submit(this.id(), this.nickname(), this.answers());
-      this.participatedBefore.set(result === 'duplicate');
-      await this.showResults();
+      await this.backToList(result);
     } catch {
       this.failed.set(true);
     } finally {
       this.busy.set(false);
     }
+  }
+
+  /**
+   * Geht zurück zur Umfrageübersicht, die eine kurze Bestätigung zeigt.
+   * @param result Ergebnis von `submit()`
+   */
+  private async backToList(result: SubmitResult): Promise<void> {
+    const hinweis = result === 'saved' ? 'gespeichert' : 'bereits-teilgenommen';
+    await this.router.navigate(['/umfragen'], { queryParams: { hinweis } });
   }
 
   /**
@@ -108,7 +114,7 @@ export class PollSurvey implements OnInit {
   private async load(password?: string): Promise<void> {
     this.busy.set(true);
     try {
-      await this.apply(await this.polls.open(this.id(), this.nickname(), password));
+      this.apply(await this.polls.open(this.id(), this.nickname(), password));
     } catch {
       this.view.set('error');
     } finally {
@@ -117,21 +123,16 @@ export class PollSurvey implements OnInit {
   }
 
   /**
-   * Zeigt je nach Antwort des Servers Formular, Ergebnisse oder den Grund der Ablehnung.
+   * Zeigt je nach Antwort des Servers Formular, Teilnahme-Hinweis oder den Grund der Ablehnung.
    * @param result Ergebnis von `open()`
    */
-  private async apply(result: OpenResult): Promise<void> {
+  private apply(result: OpenResult): void {
     if (result.status !== 'ok') {
       this.reject(result.status);
       return;
     }
     this.survey.set(result.survey);
-    this.participatedBefore.set(result.participated);
-    if (result.participated) {
-      await this.showResults();
-    } else {
-      this.view.set('form');
-    }
+    this.view.set(result.participated ? 'participated' : 'form');
   }
 
   /**
@@ -145,11 +146,5 @@ export class PollSurvey implements OnInit {
     }
     this.passwordError.set(PASSWORD_MESSAGES[problem] ?? '');
     this.view.set('password');
-  }
-
-  /** Lädt die Ergebnisse und zeigt sie an. */
-  private async showResults(): Promise<void> {
-    this.results.set(await this.polls.results(this.id(), this.nickname()));
-    this.view.set('results');
   }
 }

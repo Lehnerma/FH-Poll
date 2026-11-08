@@ -37,6 +37,15 @@
     color: var(--color-text-muted);
   }
 
+  &__notice {
+    margin: 0;
+    padding: $space-3 $space-4;
+    font-size: rem(14px);
+    background: var(--color-surface);
+    border: 1px solid var(--color-divider);
+    border-radius: $space-2;
+  }
+
   &__grid {
     display: grid;
     gap: $space-3;
