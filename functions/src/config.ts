@@ -27,3 +27,15 @@ export const PUBLIC_FIELDS = [
   'notiz',
   'geburtsjahr',
 ] as const;
+
+/** Firestore-Dokument mit Salt + Hash des gemeinsamen Umfrage-Passworts (für Clients gesperrt). */
+export const POLL_ACCESS_DOC = 'config/pollAccess';
+
+/** Wurzel der Umfragen in der Realtime Database (`surveys`, `content`, `responses`). */
+export const POLL_PATH = 'poll';
+
+/** Jede Frage hat genau diese Anzahl Antwortmöglichkeiten (eine Auswahl). */
+export const OPTION_COUNT = 4;
+
+/** Längster erlaubter Nickname (wie im Login-Formular). */
+export const NICKNAME_MAX_LENGTH = 30;

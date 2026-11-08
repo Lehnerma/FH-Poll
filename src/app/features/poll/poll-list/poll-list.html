@@ -14,17 +14,19 @@
     } @else {
       <div class="page__grid">
         @for (survey of list; track survey.id) {
-          <a class="tile" [routerLink]="['/umfragen', survey.id]">
-            <span class="tile__kicker">{{ survey.questions.length }} Fragen</span>
-            <span class="tile__title">{{ survey.title }}</span>
-            <span class="tile__meta">
-              {{
-                isDone(survey.id)
-                  ? 'Bereits teilgenommen'
-                  : survey.description || 'Jetzt teilnehmen'
-              }}
-            </span>
-          </a>
+          @if (survey.active) {
+            <a class="tile" [routerLink]="['/umfragen', survey.id]">
+              <span class="tile__kicker">{{ survey.questionCount }} Fragen · 🔒 Passwort</span>
+              <span class="tile__title">{{ survey.title }}</span>
+              <span class="tile__meta">Jetzt teilnehmen</span>
+            </a>
+          } @else {
+            <div class="tile" aria-disabled="true">
+              <span class="tile__kicker">{{ survey.questionCount }} Fragen</span>
+              <span class="tile__title">{{ survey.title }}</span>
+              <span class="tile__meta">Geschlossen</span>
+            </div>
+          }
         }
       </div>
     }

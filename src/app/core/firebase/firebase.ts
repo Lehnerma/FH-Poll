@@ -3,6 +3,7 @@ import { FirebaseApp, initializeApp } from 'firebase/app';
 import { Auth, getAuth } from 'firebase/auth';
 import { Database, getDatabase } from 'firebase/database';
 import { Functions, getFunctions } from 'firebase/functions';
+import { FirebaseStorage, getStorage } from 'firebase/storage';
 import { environment } from '../../../environments/environment';
 
 const FIREBASE_APP = new InjectionToken<FirebaseApp>('FIREBASE_APP', {
@@ -18,7 +19,12 @@ export const FIREBASE_DATABASE = new InjectionToken<Database>('FIREBASE_DATABASE
   factory: (): Database => getDatabase(inject(FIREBASE_APP)),
 });
 
-/** Cloud Functions (Box-Passwort setzen und Box entsperren), Region wie im Functions-Projekt. */
+/** Cloud Storage: Fotos der Umfragen (`polls/<umfrage>/<uuid>.<endung>`). */
+export const FIREBASE_STORAGE = new InjectionToken<FirebaseStorage>('FIREBASE_STORAGE', {
+  factory: (): FirebaseStorage => getStorage(inject(FIREBASE_APP)),
+});
+
+/** Cloud Functions (Passwörter setzen, Boxen und Umfragen entsperren), Region wie im Functions-Projekt. */
 export const FIREBASE_FUNCTIONS = new InjectionToken<Functions>('FIREBASE_FUNCTIONS', {
   factory: (): Functions => getFunctions(inject(FIREBASE_APP), 'europe-west1'),
 });

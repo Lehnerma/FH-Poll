@@ -1,0 +1,22 @@
+<fieldset class="poll-question">
+  <legend class="poll-question__text">{{ number() }}. {{ question().text }}</legend>
+
+  @if (question().photo; as photo) {
+    <app-photo-zoom class="poll-question__photo" [src]="photo.url" [alt]="photo.alt" />
+  }
+
+  <div class="poll-question__options">
+    @for (option of question().options; track $index; let index = $index) {
+      <label class="poll-question__option">
+        <input
+          class="poll-question__input"
+          type="radio"
+          [name]="question().id"
+          [checked]="selected() === index"
+          (change)="chosen.emit(index)"
+        />
+        <span class="poll-question__label">{{ option }}</span>
+      </label>
+    }
+  </div>
+</fieldset>

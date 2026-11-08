@@ -1,34 +1,10 @@
-import { initializeApp } from 'firebase-admin/app';
+import './setup';
 import { getDatabase } from 'firebase-admin/database';
-import { FieldValue, getFirestore } from 'firebase-admin/firestore';
-import { CallableRequest, HttpsError, onCall } from 'firebase-functions/v2/https';
-import { setGlobalOptions } from 'firebase-functions/v2';
-import { assertNotLocked, clearFailures, registerFailure } from './attempts';
-import { ACCESS_DOC, ARCHIVE_PATH, BOX_NUMBERS, PUBLIC_FIELDS, REGION } from './config';
-import { hashPassword, isStoredPassword, verifyPassword } from './password';
+import { HttpsError, onCall } from 'firebase-functions/v2/https';
+import { assertPassword, storePassword } from './access';
+import { ACCESS_DOC, ARCHIVE_PATH, BOX_NUMBERS, PUBLIC_FIELDS } from './config';
 
-initializeApp();
-setGlobalOptions({ region: REGION, maxInstances: 5 });
-
-/**
- * Liest ein Textfeld aus den Aufruf-Daten.
- * @param data Daten des Aufrufs
- * @param key Feldname
- * @returns Text (leer, wenn nicht vorhanden)
- */
-function readText(data: unknown, key: string): string {
-  const value = (data as Record<string, unknown> | null)?.[key];
-  return typeof value === 'string' ? value : '';
-}
-
-/**
- * Bestimmt die IP des Aufrufers (für die Fehlversuch-Sperre).
- * @param request Aufruf
- * @returns IP oder "unknown"
- */
-function callerIp(request: CallableRequest): string {
-  return request.rawRequest.ip ?? 'unknown';
-}
+export { getSurveyResults, setPollPassword, submitSurvey, unlockSurvey } from './poll';
 
 /**
  * Reduziert einen Archiv-Eintrag auf die Felder, die an User gehen dürfen.
@@ -46,17 +22,7 @@ function toPublicEntry(key: string, raw: Record<string, unknown>): Record<string
 
 /** Nur eingeloggter Admin: setzt das gemeinsame Passwort aller Boxen (Hash wird hier erzeugt). */
 export const setBoxPassword = onCall(async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'admin-only');
-  }
-  const password = readText(request.data, 'password');
-  if (password.length < 8 || password.length > 200) {
-    throw new HttpsError('invalid-argument', 'password-length');
-  }
-  const stored = await hashPassword(password);
-  await getFirestore()
-    .doc(ACCESS_DOC)
-    .set({ ...stored, updatedAt: FieldValue.serverTimestamp() });
+  await storePassword(request, ACCESS_DOC);
   return { ok: true };
 });
 
@@ -71,25 +37,6 @@ function readBox(data: unknown): number {
     throw new HttpsError('invalid-argument', 'box');
   }
   return box;
-}
-
-/**
- * Prüft das Passwort gegen den Hash und führt die Fehlversuch-Sperre.
- * @param request Aufruf mit `password`
- */
-async function assertPassword(request: CallableRequest): Promise<void> {
-  const ip = callerIp(request);
-  await assertNotLocked(ip);
-
-  const stored = (await getFirestore().doc(ACCESS_DOC).get()).data();
-  if (!isStoredPassword(stored)) {
-    throw new HttpsError('failed-precondition', 'not-configured');
-  }
-  if (!(await verifyPassword(readText(request.data, 'password'), stored))) {
-    await registerFailure(ip);
-    throw new HttpsError('permission-denied', 'wrong-password');
-  }
-  await clearFailures(ip);
 }
 
 /**
@@ -110,6 +57,6 @@ async function loadBoxEntries(box: number): Promise<Record<string, unknown>[]> {
 /** Öffentlich: prüft das Passwort und liefert nur die Einträge der gewünschten Box. */
 export const unlockBox = onCall(async (request) => {
   const box = readBox(request.data);
-  await assertPassword(request);
+  await assertPassword(request, ACCESS_DOC);
   return { entries: await loadBoxEntries(box) };
 });

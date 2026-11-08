@@ -7,29 +7,34 @@
       ".write": false,
       "surveys": {
         ".read": true,
+        "$surveyId": {
+          ".write": "auth != null",
+          ".validate": "!newData.exists() || newData.hasChildren(['title', 'active', 'questionCount', 'createdAt'])",
+          "title": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+          },
+          "active": {
+            ".validate": "newData.isBoolean()"
+          },
+          "questionCount": {
+            ".validate": "newData.isNumber() && newData.val() >= 1"
+          },
+          "createdAt": {
+            ".validate": "newData.isNumber()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "content": {
+        ".read": "auth != null",
         ".write": "auth != null"
       },
       "responses": {
+        ".read": "auth != null",
         "$surveyId": {
-          "$nick": {
-            ".read": "auth != null",
-            ".write": "(!data.exists() && newData.exists()) || auth != null",
-            ".validate": "newData.hasChildren(['nickname', 'submittedAt', 'answers'])",
-            "nickname": {
-              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 30"
-            },
-            "submittedAt": {
-              ".validate": "newData.val() == now"
-            },
-            "answers": {
-              "$questionId": {
-                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 3"
-              }
-            },
-            "$other": {
-              ".validate": false
-            }
-          }
+          ".write": "auth != null && !newData.exists()"
         }
       }
     },

@@ -1,133 +1,169 @@
-import { Service, inject } from '@angular/core';
-import { get, ref, serverTimestamp, set } from 'firebase/database';
+import { Service, computed, inject, signal } from '@angular/core';
+import { get, ref } from 'firebase/database';
+import { FunctionsError } from 'firebase/functions';
 import { DB_ROOT } from '../../../environments/environment';
-import { FIREBASE_DATABASE } from '../firebase/firebase';
-import { Survey, SurveyAnswers, nicknameKey, toSurvey } from './survey';
+import { callFunction } from '../firebase/call-function';
+import { FIREBASE_DATABASE, FIREBASE_FUNCTIONS } from '../firebase/firebase';
+import {
+  Survey,
+  SurveyAnswers,
+  SurveyResults,
+  SurveySummary,
+  toResults,
+  toSummary,
+  toSurvey,
+} from './survey';
 
-const SUBMITTED_KEY = 'poll.submitted';
+/** Warum eine Umfrage nicht geöffnet werden konnte. */
+export type AccessProblem = 'wrong' | 'locked' | 'closed' | 'not-configured' | 'not-found';
 
-/** Ergebnis beim Absenden: gespeichert oder dieser Nickname hat schon teilgenommen. */
+/** Ergebnis von `open()`: Umfrage samt Teilnahme-Status oder der Grund für die Ablehnung. */
+export type OpenResult =
+  | { readonly status: 'ok'; readonly survey: Survey; readonly participated: boolean }
+  | { readonly status: AccessProblem };
+
 export type SubmitResult = 'saved' | 'duplicate';
 
-/**
- * Prüft, ob ein Datenbankfehler eine abgelehnte Berechtigung ist.
- * @param error Gefangener Fehler
- * @returns true bei PERMISSION_DENIED
- */
-function isPermissionDenied(error: unknown): boolean {
-  const { code, message } = (error ?? {}) as Record<string, unknown>;
-  return code === 'PERMISSION_DENIED' || String(message).includes('PERMISSION_DENIED');
-}
+const PROBLEMS: Readonly<Record<string, AccessProblem>> = {
+  'functions/permission-denied': 'wrong',
+  'functions/resource-exhausted': 'locked',
+  'functions/not-found': 'not-found',
+};
 
 /**
- * Liest die auf diesem Gerät gemerkten Teilnahmen.
- * @returns Einträge der Form `<umfrage>/<nicknameKey>`
+ * Übersetzt einen Function-Fehler in einen Grund; unbekannte Fehler (z. B. Netzwerk) werden weitergereicht.
+ * @param error Fehler des Aufrufs
+ * @returns Grund der Ablehnung
  */
-function readSubmitted(): string[] {
-  try {
-    const parsed: unknown = JSON.parse(localStorage.getItem(SUBMITTED_KEY) ?? '[]');
-    return Array.isArray(parsed) ? parsed.filter((item) => typeof item === 'string') : [];
-  } catch {
-    return [];
+function toProblem(error: unknown): AccessProblem {
+  if (error instanceof FunctionsError) {
+    if (error.code === 'functions/failed-precondition') {
+      return error.message === 'closed' ? 'closed' : 'not-configured';
+    }
+    const problem = PROBLEMS[error.code];
+    if (problem) {
+      return problem;
+    }
   }
+  throw error;
 }
 
 /**
- * Umfragen für User (Realtime Database, Zweig `poll`).
- * - `poll/surveys/<id>`: Umfrage, für alle lesbar, nur der Admin schreibt.
- * - `poll/responses/<id>/<nicknameKey>`: Antwort, User dürfen sie nur neu anlegen (nie ändern
- *   oder lesen). So kann pro Nickname nur einmal abgegeben werden; der Admin kann den Eintrag
- *   später löschen, um die Teilnahme wieder freizugeben.
+ * Umfragen für User (Realtime Database `poll/surveys` plus Cloud Functions).
+ * Titel und Status sind öffentlich lesbar. Fragen, Fotos, Antworten und Ergebnisse liefert nur die
+ * Function nach richtigem Passwort. Das Passwort (eins für alle Umfragen) bleibt im Arbeitsspeicher:
+ * Seite neu laden = Passwort erneut eingeben.
  */
 @Service()
 export class Polls {
   private readonly database = inject(FIREBASE_DATABASE);
+  private readonly functions = inject(FIREBASE_FUNCTIONS);
+  private readonly password = signal('');
+
+  /** Ist in dieser Sitzung schon ein gültiges Passwort eingegeben worden? */
+  readonly unlocked = computed(() => this.password() !== '');
 
   /**
-   * Lädt alle aktiven Umfragen.
-   * @returns Aktive Umfragen, nach Titel sortiert
+   * Lädt alle Umfragen (auch geschlossene) für die Liste.
+   * @returns Umfragen, neueste zuerst
    */
-  async loadActive(): Promise<Survey[]> {
+  async loadSummaries(): Promise<SurveySummary[]> {
     const snapshot = await get(ref(this.database, `${DB_ROOT.poll}/surveys`));
-    const surveys: Survey[] = [];
+    const surveys: SurveySummary[] = [];
     snapshot.forEach((child) => {
-      const survey = toSurvey(child.key, child.val());
-      if (survey) {
-        surveys.push(survey);
+      const summary = toSummary(child.key, child.val());
+      if (summary) {
+        surveys.push(summary);
       }
     });
-    return surveys.sort((a, b) => a.title.localeCompare(b.title, 'de'));
+    return surveys.sort((a, b) => b.createdAt - a.createdAt);
   }
 
   /**
-   * Lädt eine einzelne aktive Umfrage.
-   * @param id Schlüssel der Umfrage
-   * @returns Umfrage oder null, wenn sie fehlt oder nicht aktiv ist
-   */
-  async load(id: string): Promise<Survey | null> {
-    const snapshot = await get(ref(this.database, `${DB_ROOT.poll}/surveys/${id}`));
-    return toSurvey(id, snapshot.val());
-  }
-
-  /**
-   * Hat dieser Nickname auf diesem Gerät schon an der Umfrage teilgenommen?
-   * (User dürfen Antworten nicht lesen; die endgültige Sperre prüft die Datenbank beim Absenden.)
+   * Öffnet eine Umfrage (prüft Passwort und Status serverseitig).
    * @param surveyId Schlüssel der Umfrage
-   * @param nickname Nickname
-   * @returns true, wenn die Teilnahme gemerkt ist
+   * @param nickname Nickname des Teilnehmers
+   * @param password Eingegebenes Passwort (Standard: das in dieser Sitzung gemerkte)
+   * @returns Die Umfrage oder der Grund, warum sie nicht geöffnet werden darf
    */
-  hasSubmitted(surveyId: string, nickname: string): boolean {
-    return readSubmitted().includes(`${surveyId}/${nicknameKey(nickname)}`);
+  async open(surveyId: string, nickname: string, password = this.password()): Promise<OpenResult> {
+    try {
+      const result = await this.unlock(surveyId, nickname, password);
+      if (result.status === 'ok') {
+        this.password.set(password);
+      }
+      return result;
+    } catch (error) {
+      return this.reject(error);
+    }
   }
 
   /**
-   * Speichert die Antworten. Die Rules lehnen ein zweites Absenden mit demselben Nickname ab.
+   * Speichert die Antworten (die Function sperrt eine zweite Abgabe mit demselben Nickname).
    * @param surveyId Schlüssel der Umfrage
    * @param nickname Nickname des Teilnehmers
    * @param answers Frage-ID → Index der gewählten Option
    * @returns `saved` oder `duplicate`, wenn der Nickname schon teilgenommen hat
    */
   async submit(surveyId: string, nickname: string, answers: SurveyAnswers): Promise<SubmitResult> {
-    const entry = `${surveyId}/${nicknameKey(nickname)}`;
-    try {
-      await this.save(entry, nickname, answers);
-    } catch (error) {
-      if (!isPermissionDenied(error)) {
-        throw error;
-      }
-      this.remember(entry);
-      return 'duplicate';
-    }
-    this.remember(entry);
-    return 'saved';
-  }
-
-  /**
-   * Schreibt die Antwort nach `poll/responses/<umfrage>/<nicknameKey>`.
-   * @param entry Eintrag der Form `<umfrage>/<nicknameKey>`
-   * @param nickname Nickname des Teilnehmers
-   * @param answers Frage-ID → Index der gewählten Option
-   */
-  private save(entry: string, nickname: string, answers: SurveyAnswers): Promise<void> {
-    return set(ref(this.database, `${DB_ROOT.poll}/responses/${entry}`), {
-      nickname: nickname.trim(),
-      submittedAt: serverTimestamp(),
+    const data = await callFunction<{ result: string }>(this.functions, 'submitSurvey', {
+      surveyId,
+      nickname,
       answers,
+      password: this.password(),
     });
+    return data.result === 'saved' ? 'saved' : 'duplicate';
   }
 
   /**
-   * Merkt die Teilnahme auf dem Gerät, damit der Hinweis ohne Datenbank-Abfrage erscheint.
-   * @param entry Eintrag der Form `<umfrage>/<nicknameKey>`
+   * Lädt die Ergebnisse (nur nach eigener Teilnahme).
+   * @param surveyId Schlüssel der Umfrage
+   * @param nickname Nickname des Teilnehmers
+   * @returns Teilnehmerzahl und Stimmen je Option
    */
-  private remember(entry: string): void {
-    try {
-      localStorage.setItem(
-        SUBMITTED_KEY,
-        JSON.stringify([...new Set([...readSubmitted(), entry])]),
-      );
-    } catch {
-      // Speicher blockiert: die Datenbank sperrt Doppelabgaben trotzdem.
+  async results(surveyId: string, nickname: string): Promise<SurveyResults> {
+    const raw = await callFunction<unknown>(this.functions, 'getSurveyResults', {
+      surveyId,
+      nickname,
+      password: this.password(),
+    });
+    const results = toResults(raw);
+    if (!results) {
+      throw new Error('invalid-results');
     }
+    return results;
+  }
+
+  /**
+   * Ruft die Cloud Function `unlockSurvey` auf und wandelt die Antwort um.
+   * @param surveyId Schlüssel der Umfrage
+   * @param nickname Nickname des Teilnehmers
+   * @param password Passwort, das der Server prüft
+   * @returns Umfrage mit Teilnahme-Status (oder `not-found`, wenn die Antwort ungültig ist)
+   */
+  private async unlock(surveyId: string, nickname: string, password: string): Promise<OpenResult> {
+    const payload = { surveyId, nickname, password };
+    const data = await callFunction<Record<string, unknown>>(
+      this.functions,
+      'unlockSurvey',
+      payload,
+    );
+    const survey = toSurvey(surveyId, data);
+    return survey
+      ? { status: 'ok', survey, participated: data['participated'] === true }
+      : { status: 'not-found' };
+  }
+
+  /**
+   * Wandelt einen Fehler in einen Grund um und vergisst ein nicht mehr passendes Passwort.
+   * @param error Fehler von `unlockSurvey`
+   * @returns Ergebnis mit dem Grund
+   */
+  private reject(error: unknown): OpenResult {
+    const status = toProblem(error);
+    if (status === 'wrong' || status === 'not-configured') {
+      this.password.set('');
+    }
+    return { status };
   }
 }
