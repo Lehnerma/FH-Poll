@@ -1,0 +1,28 @@
+<section class="survey-results" aria-label="Ergebnisse">
+  <p class="survey-results__participants">
+    Teilnehmer:
+    <strong class="survey-results__participants-count">{{ results().participants }}</strong>
+  </p>
+
+  @for (question of rows(); track question.id; let number = $index) {
+    <article class="survey-results__question">
+      <h3 class="survey-results__question-text">{{ number + 1 }}. {{ question.text }}</h3>
+      <ul class="survey-results__options">
+        @for (option of question.options; track $index) {
+          <li class="survey-results__option">
+            <span class="survey-results__option-text">{{ option.text }}</span>
+            <progress
+              class="survey-results__bar"
+              max="100"
+              [value]="option.percent"
+              [attr.aria-label]="option.text + ': ' + option.percent + ' Prozent'"
+            ></progress>
+            <span class="survey-results__option-value">
+              {{ option.percent }} % ({{ option.count }})
+            </span>
+          </li>
+        }
+      </ul>
+    </article>
+  }
+</section>

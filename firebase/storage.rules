@@ -1,0 +1,15 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Umfrage-Fotos: der Pfad enthält eine zufällige UUID (polls/<umfrage>/<uuid>.<endung>).
+    // Lesen darf jeder, der den Link kennt; der Link kommt erst nach dem Passwort aus der Function.
+    match /polls/{surveyId}/{file} {
+      allow read: if true;
+      allow create, update: if request.auth != null
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp)');
+      allow delete: if request.auth != null;
+    }
+  }
+}

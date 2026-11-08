@@ -1,0 +1,61 @@
+@use '../abstracts' as *;
+
+// Gesamtansicht der Ergebnisse (<app-survey-results-view>), für User und Admin
+.survey-results {
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
+
+  &__participants {
+    margin: 0;
+    font-size: rem(14px);
+    color: var(--color-text-muted);
+  }
+
+  &__participants-count {
+    color: var(--color-text);
+  }
+
+  &__question {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+    padding: $space-4;
+    background: var(--color-surface);
+  }
+
+  &__question-text {
+    margin: 0;
+    font-size: rem(16px);
+    line-height: 1.3;
+  }
+
+  &__options {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__option {
+    display: grid;
+    gap: $space-1;
+  }
+
+  &__option-text {
+    font-size: rem(14px);
+  }
+
+  &__bar {
+    width: 100%;
+    height: 0.75rem;
+    accent-color: var(--color-accent);
+  }
+
+  &__option-value {
+    font-size: rem(13px);
+    color: var(--color-text-muted);
+  }
+}

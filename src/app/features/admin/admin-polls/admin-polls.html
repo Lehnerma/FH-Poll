@@ -1,0 +1,84 @@
+<app-topbar title="Umfragen · Admin" backLink="/admin" backLabel="Dashboard" />
+
+<main class="page">
+  <div class="page__head">
+    <h1 class="page__title">Umfragen</h1>
+    <a class="btn btn--primary" routerLink="/admin/umfragen/neu">Neue Umfrage</a>
+  </div>
+
+  @if (actionFailed()) {
+    <p class="card__error" role="alert">Die Änderung konnte nicht gespeichert werden.</p>
+  }
+
+  @if (surveys.isLoading()) {
+    <p class="page__lead" role="status">Umfragen werden geladen …</p>
+  } @else if (surveys.error()) {
+    <p class="card__error" role="alert">Umfragen konnten nicht geladen werden.</p>
+  } @else {
+    @let list = surveys.value() ?? [];
+    @if (list.length === 0) {
+      <p class="page__lead">Noch keine Umfrage angelegt.</p>
+    }
+    <ul class="poll-admin-list">
+      @for (survey of list; track survey.id) {
+        <li class="poll-admin-list__item card">
+          <div class="poll-admin-list__info">
+            <strong class="poll-admin-list__title">{{ survey.title }}</strong>
+            <span class="tag">{{ survey.active ? 'Aktiv' : 'Inaktiv (geschlossen)' }}</span>
+            <span class="poll-admin-list__meta">{{ survey.questionCount }} Fragen</span>
+          </div>
+          <div class="poll-admin-list__actions">
+            <button type="button" class="btn btn--secondary" (click)="toggleActive(survey)">
+              {{ survey.active ? 'Schließen' : 'Aktiv schalten' }}
+            </button>
+            <a class="btn btn--secondary" [routerLink]="['/admin/umfragen', survey.id]"
+              >Bearbeiten</a
+            >
+            <a
+              class="btn btn--secondary"
+              [routerLink]="['/admin/umfragen', survey.id, 'ergebnisse']"
+            >
+              Ergebnisse
+            </a>
+            <button type="button" class="btn btn--ghost" (click)="remove(survey)">Löschen</button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+
+  <form class="card" (submit)="onSetPassword(); $event.preventDefault()" novalidate>
+    <span class="card__kicker">Zugang</span>
+    <h2 class="card__title">Umfrage-Passwort ändern</h2>
+    <p class="card__text">
+      Gilt für alle Umfragen (getrennt vom Box-Passwort). Der Hash wird serverseitig erzeugt und ist
+      für Clients nicht lesbar.
+    </p>
+
+    <div class="field">
+      <label class="field__label" for="new-poll-password">Neues Passwort</label>
+      <input
+        class="field__input"
+        id="new-poll-password"
+        type="password"
+        autocomplete="new-password"
+        aria-describedby="new-poll-password-message"
+        [attr.aria-invalid]="passwordForm.password().invalid() && passwordForm.password().touched()"
+        [formField]="passwordForm.password"
+      />
+      <p class="card__error" id="new-poll-password-message" aria-live="polite">
+        @if (passwordForm.password().touched() && passwordForm.password().errors().length) {
+          {{ passwordForm.password().errors()[0].message }}
+        } @else if (passwordFailed()) {
+          {{ passwordMessage() }}
+        }
+      </p>
+    </div>
+
+    @if (passwordMessage() && !passwordFailed()) {
+      <p class="card__text" role="status">{{ passwordMessage() }}</p>
+    }
+
+    <button type="submit" class="btn btn--primary">Passwort speichern</button>
+  </form>
+</main>

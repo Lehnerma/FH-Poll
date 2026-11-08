@@ -64,6 +64,28 @@ export const routes: Routes = [
           import('./features/admin/admin-dashboard/admin-dashboard').then((m) => m.AdminDashboard),
       },
       {
+        path: 'umfragen',
+        loadComponent: () =>
+          import('./features/admin/admin-polls/admin-polls').then((m) => m.AdminPolls),
+      },
+      {
+        path: 'umfragen/neu',
+        loadComponent: () =>
+          import('./features/admin/admin-poll-edit/admin-poll-edit').then((m) => m.AdminPollEdit),
+      },
+      {
+        path: 'umfragen/:id/ergebnisse',
+        loadComponent: () =>
+          import('./features/admin/admin-poll-results/admin-poll-results').then(
+            (m) => m.AdminPollResults,
+          ),
+      },
+      {
+        path: 'umfragen/:id',
+        loadComponent: () =>
+          import('./features/admin/admin-poll-edit/admin-poll-edit').then((m) => m.AdminPollEdit),
+      },
+      {
         path: 'praxis',
         loadComponent: () =>
           import('./features/admin/admin-boxes/admin-boxes').then((m) => m.AdminBoxes),

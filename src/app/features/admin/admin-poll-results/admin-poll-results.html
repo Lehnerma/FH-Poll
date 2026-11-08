@@ -1,0 +1,18 @@
+<app-topbar title="Umfragen · Admin" backLink="/admin/umfragen" backLabel="Umfragen" />
+
+<main class="page page--narrow">
+  @if (data.isLoading()) {
+    <p class="page__lead" role="status">Ergebnisse werden geladen …</p>
+  } @else if (data.error()) {
+    <p class="card__error" role="alert">Ergebnisse konnten nicht geladen werden.</p>
+  } @else if (data.value(); as current) {
+    <div class="page__head">
+      <h1 class="page__title">Ergebnisse: {{ current.title }}</h1>
+      <button type="button" class="btn btn--secondary" (click)="data.reload()">
+        Aktualisieren
+      </button>
+    </div>
+    <app-survey-results-view [results]="current.results" />
+  }
+  <a class="btn btn--ghost" routerLink="/admin/umfragen">Zu den Umfragen</a>
+</main>

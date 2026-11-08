@@ -1,22 +1,37 @@
 @use '../abstracts' as *;
 
-// Frage mit Radio-Auswahl: <fieldset class="choice"> mit <legend> und mehreren <label class="choice__option">
-.choice {
+// Formular mit allen Fragen einer Umfrage: <form class="card poll-form">
+.poll-form {
+  gap: $space-6;
+}
+
+// Eine Frage: <fieldset class="poll-question"> mit Text (legend), optionalem Foto und 4 Optionen
+.poll-question {
   display: flex;
   flex-direction: column;
-  gap: $space-2;
+  gap: $space-3;
   min-width: 0;
   margin: 0;
   padding: 0;
   border: 0;
 
-  &__legend {
+  &__text {
     margin-bottom: $space-2;
     padding: 0;
     font-family: $f-title;
     font-weight: 700;
     font-size: rem(16px);
     line-height: 1.3;
+  }
+
+  &__photo {
+    display: block;
+  }
+
+  &__options {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
   }
 
   &__option {
@@ -34,12 +49,12 @@
       border-color: var(--color-text-muted);
     }
 
-    &:has(.choice__input:checked) {
+    &:has(.poll-question__input:checked) {
       background: var(--color-accent-soft);
       border-color: var(--color-accent);
     }
 
-    &:has(.choice__input:focus-visible) {
+    &:has(.poll-question__input:focus-visible) {
       outline: 2px solid var(--color-accent);
       outline-offset: 2px;
     }

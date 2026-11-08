@@ -1,0 +1,173 @@
+<app-topbar title="Umfragen · Admin" backLink="/admin/umfragen" backLabel="Umfragen" />
+
+<main class="page">
+  <h1 class="page__title">{{ id() ? 'Umfrage bearbeiten' : 'Neue Umfrage' }}</h1>
+
+  @if (loaded.isLoading()) {
+    <p class="page__lead" role="status">Umfrage wird geladen …</p>
+  } @else if (loaded.error()) {
+    <p class="card__error" role="alert">Umfrage konnte nicht geladen werden.</p>
+  } @else if (id() && !loaded.value()) {
+    <p class="page__lead" role="status">Diese Umfrage gibt es nicht.</p>
+  } @else {
+    <form class="poll-editor" (submit)="onSubmit(); $event.preventDefault()" novalidate>
+      <div class="card">
+        @let title = editForm.title();
+        <div class="field">
+          <label class="field__label" for="poll-title">Titel der Umfrage *</label>
+          <input
+            class="field__input"
+            id="poll-title"
+            type="text"
+            aria-describedby="poll-title-message"
+            [attr.aria-invalid]="title.invalid() && title.touched()"
+            [formField]="editForm.title"
+          />
+          <p class="card__error" id="poll-title-message" aria-live="polite">
+            @if (title.touched() && title.errors().length) {
+              {{ title.errors()[0].message }}
+            }
+          </p>
+        </div>
+        <p class="card__text">
+          Neue Umfragen starten inaktiv (geschlossen). In der Liste schaltest du sie aktiv.
+        </p>
+      </div>
+
+      @for (question of editForm.questions; track question.id().value(); let number = $index) {
+        @let questionId = question.id().value();
+        @let text = question.text();
+        @let alt = question.photoAlt();
+        <fieldset class="poll-editor__question">
+          <legend class="poll-editor__question-title">Frage {{ number + 1 }}</legend>
+
+          <div class="field">
+            <label class="field__label" [for]="'question-' + questionId + '-text'">
+              Fragetext *
+            </label>
+            <input
+              class="field__input"
+              type="text"
+              [id]="'question-' + questionId + '-text'"
+              [attr.aria-describedby]="'question-' + questionId + '-text-message'"
+              [attr.aria-invalid]="text.invalid() && text.touched()"
+              [formField]="question.text"
+            />
+            <p
+              class="card__error"
+              [id]="'question-' + questionId + '-text-message'"
+              aria-live="polite"
+            >
+              @if (text.touched() && text.errors().length) {
+                {{ text.errors()[0].message }}
+              }
+            </p>
+          </div>
+
+          <div class="poll-editor__photo">
+            @if (photoUrl(questionId); as url) {
+              <img class="poll-editor__photo-preview" alt="Vorschau des Fotos" [src]="url" />
+            }
+            <div class="field">
+              <label class="field__label" [for]="'question-' + questionId + '-photo'">
+                Foto (optional, JPG, PNG oder WebP, höchstens 10 MB)
+              </label>
+              <input
+                class="field__input"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                [id]="'question-' + questionId + '-photo'"
+                [attr.aria-describedby]="'question-' + questionId + '-photo-message'"
+                (change)="onPhotoSelected(questionId, $event)"
+              />
+              <p
+                class="card__error"
+                [id]="'question-' + questionId + '-photo-message'"
+                aria-live="polite"
+              >
+                {{ photoErrors()[questionId] }}
+              </p>
+            </div>
+
+            @if (question.hasPhoto().value()) {
+              <div class="field">
+                <label class="field__label" [for]="'question-' + questionId + '-alt'">
+                  Bildbeschreibung * (beschreibe, was zu sehen ist, ohne die Antwort zu verraten)
+                </label>
+                <input
+                  class="field__input"
+                  type="text"
+                  [id]="'question-' + questionId + '-alt'"
+                  [attr.aria-describedby]="'question-' + questionId + '-alt-message'"
+                  [attr.aria-invalid]="alt.invalid() && alt.touched()"
+                  [formField]="question.photoAlt"
+                />
+                <p
+                  class="card__error"
+                  [id]="'question-' + questionId + '-alt-message'"
+                  aria-live="polite"
+                >
+                  @if (alt.touched() && alt.errors().length) {
+                    {{ alt.errors()[0].message }}
+                  }
+                </p>
+              </div>
+              <button type="button" class="btn btn--secondary" (click)="removePhoto(questionId)">
+                Foto entfernen
+              </button>
+            }
+          </div>
+
+          <div class="poll-editor__options">
+            @for (option of question.options; track $index; let optionNumber = $index) {
+              @let optionState = option();
+              <div class="field">
+                <label
+                  class="field__label"
+                  [for]="'question-' + questionId + '-option-' + optionNumber"
+                >
+                  Antwort {{ optionNumber + 1 }} *
+                </label>
+                <input
+                  class="field__input"
+                  type="text"
+                  [id]="'question-' + questionId + '-option-' + optionNumber"
+                  [attr.aria-invalid]="optionState.invalid() && optionState.touched()"
+                  [formField]="option"
+                />
+                @if (optionState.touched() && optionState.errors().length) {
+                  <p class="card__error" aria-live="polite">
+                    {{ optionState.errors()[0].message }}
+                  </p>
+                }
+              </div>
+            }
+          </div>
+
+          @if (editForm.questions.length > 1) {
+            <button
+              type="button"
+              class="btn btn--secondary poll-editor__remove-button"
+              (click)="removeQuestion(questionId)"
+            >
+              Frage {{ number + 1 }} entfernen
+            </button>
+          }
+        </fieldset>
+      }
+
+      <button type="button" class="btn btn--secondary" (click)="addQuestion()">
+        Frage hinzufügen
+      </button>
+
+      @if (failed()) {
+        <p class="card__error" role="alert">Umfrage konnte nicht gespeichert werden.</p>
+      }
+
+      <div class="poll-editor__actions">
+        <button type="submit" class="btn btn--primary">Speichern</button>
+        <a class="btn btn--ghost" routerLink="/admin/umfragen">Abbrechen</a>
+      </div>
+    </form>
+  }
+</main>

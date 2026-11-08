@@ -1,0 +1,94 @@
+@use '../abstracts' as *;
+
+// Liste der Umfragen im Admin: <ul class="poll-admin-list"> mit <li class="poll-admin-list__item card">
+.poll-admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &__item {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-3;
+    align-items: center;
+  }
+
+  &__title {
+    font-family: $f-title;
+    font-size: rem(16px);
+  }
+
+  &__meta {
+    font-size: rem(13px);
+    color: var(--color-text-muted);
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-2;
+  }
+}
+
+// Editor einer Umfrage im Admin: <form class="poll-editor"> mit mehreren Fragen (fieldset)
+.poll-editor {
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
+
+  &__question {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+    min-width: 0;
+    margin: 0;
+    padding: $space-4;
+    background: var(--color-surface);
+    border: 1px solid var(--color-divider);
+  }
+
+  &__question-title {
+    padding: 0 $space-2;
+    font-family: $f-title;
+    font-weight: 700;
+    font-size: rem(16px);
+  }
+
+  &__photo {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+  }
+
+  &__photo-preview {
+    display: block;
+    max-width: 100%;
+    max-height: 20rem;
+    object-fit: contain;
+  }
+
+  &__options {
+    display: grid;
+    gap: $space-3;
+  }
+
+  &__remove-button {
+    align-self: flex-start;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-3;
+  }
+}
