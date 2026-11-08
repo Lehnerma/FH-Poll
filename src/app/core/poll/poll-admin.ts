@@ -18,7 +18,6 @@ export interface QuestionDraft {
   readonly id: string;
   readonly text: string;
   readonly options: readonly string[];
-  readonly photoAlt: string;
   readonly photo: SurveyPhoto | null;
   readonly file: File | null;
 }
@@ -130,14 +129,12 @@ export class PollAdmin {
    * @returns Frage zum Speichern
    */
   private async toStored(surveyId: string, draft: QuestionDraft): Promise<SurveyQuestion> {
-    const alt = draft.photoAlt.trim();
-    const uploaded = draft.file ? await this.photos.upload(surveyId, draft.file, alt) : null;
-    const kept = draft.photo ? { ...draft.photo, alt } : null;
+    const uploaded = draft.file ? await this.photos.upload(surveyId, draft.file) : null;
     return {
       id: draft.id,
       text: draft.text.trim(),
       options: draft.options.map((option) => option.trim()),
-      photo: uploaded ?? kept,
+      photo: uploaded ?? draft.photo,
     };
   }
 

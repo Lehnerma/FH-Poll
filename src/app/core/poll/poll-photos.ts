@@ -42,14 +42,13 @@ export class PollPhotos {
    * Lädt ein Foto hoch (Original, unverändert).
    * @param surveyId Schlüssel der Umfrage
    * @param file Gewähltes Foto
-   * @param alt Bildbeschreibung
-   * @returns Download-Link, Speicherpfad und Bildbeschreibung
+   * @returns Download-Link und Speicherpfad
    */
-  async upload(surveyId: string, file: File, alt: string): Promise<SurveyPhoto> {
+  async upload(surveyId: string, file: File): Promise<SurveyPhoto> {
     const path = `polls/${surveyId}/${crypto.randomUUID()}.${EXTENSIONS[file.type]}`;
     const photoRef = ref(this.storage, path);
     await uploadBytes(photoRef, file, { contentType: file.type });
-    return { url: await getDownloadURL(photoRef), alt, path };
+    return { url: await getDownloadURL(photoRef), path };
   }
 
   /**

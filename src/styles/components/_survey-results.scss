@@ -24,6 +24,10 @@
     background: var(--color-surface);
   }
 
+  &__photo {
+    display: block;
+  }
+
   &__question-text {
     margin: 0;
     font-size: rem(16px);

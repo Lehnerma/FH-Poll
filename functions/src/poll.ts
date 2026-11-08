@@ -1,5 +1,5 @@
 import './setup';
-import { CallableRequest, HttpsError, onCall } from 'firebase-functions/v2/https';
+import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import { assertPassword, storePassword } from './access';
 import { POLL_ACCESS_DOC } from './config';
 import {
@@ -39,25 +39,12 @@ export const submitSurvey = onCall(async (request) => {
   return { result: saved ? 'saved' : 'duplicate' };
 });
 
-/**
- * User dürfen die Ergebnisse nur mit Passwort und nach eigener Teilnahme sehen.
- * @param request Aufruf mit `password` und `nickname`
- * @param surveyId Umfrage-ID
- */
-async function assertParticipant(request: CallableRequest, surveyId: string): Promise<void> {
-  await assertPassword(request, POLL_ACCESS_DOC);
-  if (!(await hasResponded(surveyId, readNickname(request.data)))) {
-    throw new HttpsError('permission-denied', 'not-participated');
-  }
-}
-
-/** Ergebnisse als Zahlen: Admin immer, User nur mit Passwort und nach Teilnahme (offene Umfrage). */
+/** Nur eingeloggter Admin: Ergebnisse als Zahlen (auch bei geschlossener Umfrage). */
 export const getSurveyResults = onCall(async (request) => {
-  const surveyId = readSurveyId(request.data);
-  const isAdmin = request.auth !== undefined;
-  if (!isAdmin) {
-    await assertParticipant(request, surveyId);
+  if (request.auth === undefined) {
+    throw new HttpsError('unauthenticated', 'login');
   }
-  const survey = await loadSurvey(surveyId, !isAdmin);
+  const surveyId = readSurveyId(request.data);
+  const survey = await loadSurvey(surveyId, false);
   return buildResults(survey.questions, await loadAnswerSets(surveyId));
 });

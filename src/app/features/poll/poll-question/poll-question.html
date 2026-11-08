@@ -2,7 +2,11 @@
   <legend class="poll-question__text">{{ number() }}. {{ question().text }}</legend>
 
   @if (question().photo; as photo) {
-    <app-photo-zoom class="poll-question__photo" [src]="photo.url" [alt]="photo.alt" />
+    <app-photo-zoom
+      class="poll-question__photo"
+      [src]="photo.url"
+      [alt]="'Foto zu Frage ' + number()"
+    />
   }
 
   <div class="poll-question__options">

@@ -7,6 +7,13 @@
   @for (question of rows(); track question.id; let number = $index) {
     <article class="survey-results__question">
       <h3 class="survey-results__question-text">{{ number + 1 }}. {{ question.text }}</h3>
+      @if (question.photoUrl; as url) {
+        <app-photo-zoom
+          class="survey-results__photo"
+          [src]="url"
+          [alt]="'Foto zu Frage ' + (number + 1)"
+        />
+      }
       <ul class="survey-results__options">
         @for (option of question.options; track $index) {
           <li class="survey-results__option">

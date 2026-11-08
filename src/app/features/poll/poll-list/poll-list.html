@@ -3,6 +3,12 @@
 <main class="page">
   <h1 class="page__title">Umfragen</h1>
 
+  <div role="status">
+    @if (notice()) {
+      <p class="page__notice">{{ notice() }}</p>
+    }
+  </div>
+
   @if (surveys.isLoading()) {
     <p class="page__lead" role="status">Umfragen werden geladen …</p>
   } @else if (surveys.error()) {

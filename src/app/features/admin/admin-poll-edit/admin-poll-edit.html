@@ -37,7 +37,6 @@
       @for (question of editForm.questions; track question.id().value(); let number = $index) {
         @let questionId = question.id().value();
         @let text = question.text();
-        @let alt = question.photoAlt();
         <fieldset class="poll-editor__question">
           <legend class="poll-editor__question-title">Frage {{ number + 1 }}</legend>
 
@@ -89,29 +88,7 @@
               </p>
             </div>
 
-            @if (question.hasPhoto().value()) {
-              <div class="field">
-                <label class="field__label" [for]="'question-' + questionId + '-alt'">
-                  Bildbeschreibung * (beschreibe, was zu sehen ist, ohne die Antwort zu verraten)
-                </label>
-                <input
-                  class="field__input"
-                  type="text"
-                  [id]="'question-' + questionId + '-alt'"
-                  [attr.aria-describedby]="'question-' + questionId + '-alt-message'"
-                  [attr.aria-invalid]="alt.invalid() && alt.touched()"
-                  [formField]="question.photoAlt"
-                />
-                <p
-                  class="card__error"
-                  [id]="'question-' + questionId + '-alt-message'"
-                  aria-live="polite"
-                >
-                  @if (alt.touched() && alt.errors().length) {
-                    {{ alt.errors()[0].message }}
-                  }
-                </p>
-              </div>
+            @if (photoUrl(questionId)) {
               <button type="button" class="btn btn--secondary" (click)="removePhoto(questionId)">
                 Foto entfernen
               </button>

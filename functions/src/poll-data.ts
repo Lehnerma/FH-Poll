@@ -5,7 +5,6 @@ import { NICKNAME_MAX_LENGTH, OPTION_COUNT, POLL_PATH } from './config';
 
 export interface PollPhoto {
   url: string;
-  alt: string;
 }
 
 export interface PollQuestion {
@@ -79,10 +78,10 @@ export function nicknameKey(name: string): string {
  * @returns Foto oder null
  */
 function toPhoto(raw: unknown): PollPhoto | null {
-  if (!isRecord(raw) || typeof raw['url'] !== 'string' || typeof raw['alt'] !== 'string') {
+  if (!isRecord(raw) || typeof raw['url'] !== 'string') {
     return null;
   }
-  return { url: raw['url'], alt: raw['alt'] };
+  return { url: raw['url'] };
 }
 
 /**

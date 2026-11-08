@@ -1,14 +1,12 @@
 import { applyEach, schema, validate } from '@angular/forms/signals';
 import { EditableSurvey, QuestionDraft } from '../../../core/poll/poll-admin';
-import { OPTION_COUNT, SurveyPhoto } from '../../../core/poll/survey';
+import { DEFAULT_OPTIONS, SurveyPhoto } from '../../../core/poll/survey';
 
-/** Formularwerte einer Frage im Editor. `hasPhoto` steuert, ob die Bildbeschreibung Pflicht ist. */
+/** Formularwerte einer Frage im Editor. */
 export interface QuestionModel {
   id: string;
   text: string;
   options: string[];
-  photoAlt: string;
-  hasPhoto: boolean;
 }
 
 export interface EditorModel {
@@ -46,26 +44,20 @@ export function withoutPhoto(states: PhotoStates, questionId: string): PhotoStat
   return Object.fromEntries(Object.entries(states).filter(([id]) => id !== questionId));
 }
 
-/** Regeln für jede Frage: Text und alle 4 Antworten sind Pflicht, mit Foto auch die Bildbeschreibung. */
+/** Regeln für jede Frage: Text und alle 4 Antworten sind Pflicht. */
 export const QUESTION_SCHEMA = schema<QuestionModel>((question) => {
   validate(question.text, notBlank('Bitte den Fragetext eingeben.'));
   applyEach(question.options, (option) => {
     validate(option, notBlank('Bitte die Antwort eingeben.'));
   });
-  validate(question.photoAlt, ({ value, valueOf }) =>
-    valueOf(question.hasPhoto) && value().trim() === ''
-      ? { kind: 'alt-required', message: 'Bitte eine Bildbeschreibung eingeben.' }
-      : undefined,
-  );
 });
 
 /**
- * Leere Frage mit neuer ID und 4 leeren Antworten.
+ * Neue Frage mit neuer ID, leerem Text und den vorausgefüllten Standardantworten.
  * @returns Neue Frage für den Editor
  */
 export function emptyQuestion(): QuestionModel {
-  const options = Array.from({ length: OPTION_COUNT }, () => '');
-  return { id: crypto.randomUUID(), text: '', options, photoAlt: '', hasPhoto: false };
+  return { id: crypto.randomUUID(), text: '', options: [...DEFAULT_OPTIONS] };
 }
 
 /**
@@ -81,8 +73,6 @@ export function toModel(survey: EditableSurvey | null): EditorModel {
     id: question.id,
     text: question.text,
     options: [...question.options],
-    photoAlt: question.photo?.alt ?? '',
-    hasPhoto: question.photo !== null,
   }));
   return { title: survey.title, questions };
 }
@@ -113,7 +103,6 @@ export function toDrafts(model: EditorModel, states: PhotoStates): QuestionDraft
     id: question.id,
     text: question.text,
     options: question.options,
-    photoAlt: question.photoAlt,
     photo: states[question.id]?.photo ?? null,
     file: states[question.id]?.file ?? null,
   }));
