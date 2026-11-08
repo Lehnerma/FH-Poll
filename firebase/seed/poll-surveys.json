@@ -1,0 +1,29 @@
+{
+  "gaming-check": {
+    "title": "Gaming-Check (Test)",
+    "description": "Fünf kurze Fragen rund ums Zocken – nur zum Testen.",
+    "active": true,
+    "questions": {
+      "q1": {
+        "text": "Auf welcher Plattform spielst du am liebsten?",
+        "options": ["PC", "PlayStation", "Xbox", "Nintendo Switch"]
+      },
+      "q2": {
+        "text": "Welches Genre spielst du am häufigsten?",
+        "options": ["Action-Adventure", "Shooter", "Strategie & Simulation", "Rollenspiel"]
+      },
+      "q3": {
+        "text": "Wie viele Stunden spielst du pro Woche?",
+        "options": ["Unter 5", "5 bis 10", "11 bis 20", "Über 20"]
+      },
+      "q4": {
+        "text": "Wie spielst du am liebsten?",
+        "options": ["Alleine", "Online mit Freunden", "Koop auf der Couch", "Kompetitiv (Ranked)"]
+      },
+      "q5": {
+        "text": "Welche Spielereihe ist für dich ein Klassiker?",
+        "options": ["Mario", "Zelda", "Minecraft", "Pokémon"]
+      }
+    }
+  }
+}

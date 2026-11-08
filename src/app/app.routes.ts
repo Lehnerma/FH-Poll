@@ -30,6 +30,17 @@ export const routes: Routes = [
     loadComponent: () => import('./features/dashboard/dashboard').then((m) => m.Dashboard),
   },
   {
+    path: 'umfragen',
+    canActivate: [userGuard],
+    loadComponent: () => import('./features/poll/poll-list/poll-list').then((m) => m.PollList),
+  },
+  {
+    path: 'umfragen/:id',
+    canActivate: [userGuard],
+    loadComponent: () =>
+      import('./features/poll/poll-survey/poll-survey').then((m) => m.PollSurvey),
+  },
+  {
     path: 'praxis',
     canActivate: [userGuard],
     loadComponent: () => import('./features/praxis/praxis-boxes').then((m) => m.PraxisBoxes),
