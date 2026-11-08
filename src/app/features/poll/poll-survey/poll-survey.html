@@ -1,0 +1,72 @@
+<app-topbar title="Umfragen" backLink="/umfragen" backLabel="Umfragen" />
+
+<main class="page page--narrow">
+  @if (survey.isLoading()) {
+    <p class="page__lead" role="status">Umfrage wird geladen …</p>
+  } @else if (survey.error()) {
+    <p class="card__error" role="alert">Umfrage konnte nicht geladen werden.</p>
+  } @else if (survey.value(); as current) {
+    <h1 class="page__title">{{ current.title }}</h1>
+    @if (current.description) {
+      <p class="page__lead">{{ current.description }}</p>
+    }
+
+    @if (result() === 'saved') {
+      <section class="card" role="status">
+        <h2 class="card__title">Danke für deine Teilnahme!</h2>
+        <p class="card__text">Deine Antworten wurden gespeichert.</p>
+        <a class="btn btn--primary" routerLink="/umfragen">Zu den Umfragen</a>
+      </section>
+    } @else if (participated()) {
+      <section class="card" role="status">
+        <h2 class="card__title">Du hast bereits teilgenommen.</h2>
+        <p class="card__text">
+          Mit dem Namen „{{ nickname() }}“ wurde diese Umfrage schon beantwortet. Wende dich an die
+          Leitung, wenn du sie erneut ausfüllen sollst.
+        </p>
+        <a class="btn btn--ghost" routerLink="/umfragen">Zu den Umfragen</a>
+      </section>
+    } @else if (!nickname()) {
+      <section class="card">
+        <p class="card__text">Bitte vergib zuerst einen Namen, um teilzunehmen.</p>
+        <a class="btn btn--primary" routerLink="/login">Name festlegen</a>
+      </section>
+    } @else {
+      <form class="card" (submit)="onSubmit(); $event.preventDefault()" novalidate>
+        @for (question of current.questions; track question.id; let number = $index) {
+          <fieldset class="choice">
+            <legend class="choice__legend">{{ number + 1 }}. {{ question.text }}</legend>
+            @for (option of question.options; track $index; let index = $index) {
+              <label class="choice__option">
+                <input
+                  class="choice__input"
+                  type="radio"
+                  [name]="question.id"
+                  [checked]="answers()[question.id] === index"
+                  (change)="choose(question.id, index)"
+                />
+                <span class="choice__label">{{ option }}</span>
+              </label>
+            }
+          </fieldset>
+        }
+
+        <p class="card__text" aria-live="polite">
+          {{ answeredCount() }} von {{ current.questions.length }} Fragen beantwortet
+        </p>
+        @if (failed()) {
+          <p class="card__error" role="alert">
+            Antworten konnten nicht gespeichert werden. Bitte versuche es erneut.
+          </p>
+        }
+
+        <button type="submit" class="btn btn--primary" [disabled]="!complete() || busy()">
+          Absenden
+        </button>
+      </form>
+    }
+  } @else {
+    <p class="page__lead" role="status">Diese Umfrage gibt es nicht oder sie ist nicht aktiv.</p>
+    <a class="btn btn--ghost" routerLink="/umfragen">Zu den Umfragen</a>
+  }
+</main>

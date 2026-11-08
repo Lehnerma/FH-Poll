@@ -1,0 +1,32 @@
+<app-topbar title="Umfragen" backLink="/dashboard" backLabel="Dashboard" />
+
+<main class="page">
+  <h1 class="page__title">Umfragen</h1>
+
+  @if (surveys.isLoading()) {
+    <p class="page__lead" role="status">Umfragen werden geladen …</p>
+  } @else if (surveys.error()) {
+    <p class="card__error" role="alert">Umfragen konnten nicht geladen werden.</p>
+  } @else {
+    @let list = surveys.value() ?? [];
+    @if (list.length === 0) {
+      <p class="page__lead">Aktuell gibt es keine Umfragen.</p>
+    } @else {
+      <div class="page__grid">
+        @for (survey of list; track survey.id) {
+          <a class="tile" [routerLink]="['/umfragen', survey.id]">
+            <span class="tile__kicker">{{ survey.questions.length }} Fragen</span>
+            <span class="tile__title">{{ survey.title }}</span>
+            <span class="tile__meta">
+              {{
+                isDone(survey.id)
+                  ? 'Bereits teilgenommen'
+                  : survey.description || 'Jetzt teilnehmen'
+              }}
+            </span>
+          </a>
+        }
+      </div>
+    }
+  }
+</main>
