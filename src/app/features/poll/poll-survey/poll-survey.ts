@@ -66,9 +66,9 @@ export class PollSurvey implements OnInit {
   /** Prüft das eingegebene Passwort (Formular-Submit) und öffnet die Umfrage. */
   protected onUnlock(): void {
     submit(this.passwordForm, async () => {
-      const password = this.model().password;
-      this.model.set({ password: '' });
-      await this.load(password);
+      await this.load(this.model().password);
+      // Erst nach der Antwort leeren (inkl. touched), sonst zeigt `required` während der Prüfung Rot.
+      this.passwordForm().reset({ password: '' });
     });
   }
 

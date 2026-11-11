@@ -30,12 +30,14 @@
             autocomplete="off"
             aria-describedby="poll-password-message"
             [attr.aria-invalid]="
-              passwordForm.password().invalid() && passwordForm.password().touched()
+              !busy() && passwordForm.password().invalid() && passwordForm.password().touched()
             "
             [formField]="passwordForm.password"
           />
           <p class="card__error" id="poll-password-message" aria-live="polite">
-            @if (passwordForm.password().touched() && passwordForm.password().errors().length) {
+            @if (
+              !busy() && passwordForm.password().touched() && passwordForm.password().errors().length
+            ) {
               {{ passwordForm.password().errors()[0].message }}
             } @else {
               {{ passwordError() }}

@@ -1,0 +1,7 @@
+# Single-Page-App: unbekannte Pfade (z. B. /box1, /umfragen/abc) an index.html geben.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.html [L]
+</IfModule>
