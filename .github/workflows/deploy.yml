@@ -1,14 +1,17 @@
 name: Deploy (SSH)
 
+# Deployt nach jedem Merge auf main, aber nur wenn "Quality Checks" für genau diesen Commit grün waren.
+# Manuell startbar über "Run workflow" (Actions-Tab).
 on:
-  push:
-    branches: [deploy]
+  workflow_run:
+    workflows: ['Quality Checks']
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
-# Nie zwei Deploys gleichzeitig.
 concurrency:
   group: deploy
   cancel-in-progress: false
@@ -16,6 +19,10 @@ concurrency:
 jobs:
   deploy:
     name: Build & Upload per SSH (rsync)
+    # Nur bei erfolgreichen Checks eines Pushs auf main (nicht bei Pull-Request-Läufen) oder manuell.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     env:
       SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -32,6 +39,9 @@ jobs:
           fi
 
       - uses: actions/checkout@v7
+        with:
+          # Genau der Commit, den die Checks geprüft haben (bei manuellem Start: der gewählte Branch).
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - uses: actions/setup-node@v7
         with:
           node-version: 22
