@@ -36,7 +36,9 @@
           />
           <p class="card__error" id="poll-password-message" aria-live="polite">
             @if (
-              !busy() && passwordForm.password().touched() && passwordForm.password().errors().length
+              !busy() &&
+              passwordForm.password().touched() &&
+              passwordForm.password().errors().length
             ) {
               {{ passwordForm.password().errors()[0].message }}
             } @else {
