@@ -59,6 +59,9 @@ jobs:
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_deploy
           chmod 600 ~/.ssh/id_deploy
           printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          # Key prüfen und nur den öffentlichen Fingerabdruck ausgeben (zum Vergleich mit: ssh-keygen -lf <key>.pub).
+          ssh-keygen -y -f ~/.ssh/id_deploy > ~/.ssh/id_deploy.pub
+          ssh-keygen -lf ~/.ssh/id_deploy.pub
 
       - name: Upload per rsync
         run: |
