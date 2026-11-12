@@ -21,6 +21,13 @@ export const userGuard: CanActivateFn = async () => {
   return session.isAdmin() || session.hasNickname() || inject(Router).createUrlTree(['/login']);
 };
 
+/** Praxis/Objektträger (/praxis, /box1 … /box4): für User gesperrt, nur Admin. User gehen zum Dashboard. */
+export const praxisGuard: CanActivateFn = async () => {
+  const session = inject(Session);
+  await session.ready;
+  return session.isAdmin() || inject(Router).createUrlTree(['/dashboard']);
+};
+
 /** Admin-Bereich: nur mit Firebase-Login. */
 export const adminGuard: CanActivateFn = async () => {
   const session = inject(Session);

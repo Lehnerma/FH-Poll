@@ -10,6 +10,8 @@
     <p class="card__error" role="alert">Die Änderung konnte nicht gespeichert werden.</p>
   }
 
+  <p class="visually-hidden" role="status">{{ announcement() }}</p>
+
   @if (surveys.isLoading()) {
     <p class="page__lead" role="status">Umfragen werden geladen …</p>
   } @else if (surveys.error()) {
@@ -20,12 +22,34 @@
       <p class="page__lead">Noch keine Umfrage angelegt.</p>
     }
     <ul class="poll-admin-list">
-      @for (survey of list; track survey.id) {
+      @for (survey of list; track survey.id; let isFirst = $first; let isLast = $last) {
         <li class="poll-admin-list__item card">
           <div class="poll-admin-list__info">
             <strong class="poll-admin-list__title">{{ survey.title }}</strong>
             <span class="tag">{{ survey.active ? 'Aktiv' : 'Inaktiv (geschlossen)' }}</span>
             <span class="poll-admin-list__meta">{{ survey.questionCount }} Fragen</span>
+          </div>
+          <div class="poll-admin-list__order">
+            <button
+              type="button"
+              class="btn btn--ghost poll-admin-list__move poll-admin-list__move--up"
+              [id]="'move-up-' + survey.id"
+              [attr.aria-label]="'Nach oben: ' + survey.title"
+              [disabled]="isFirst"
+              (click)="move(survey, -1)"
+            >
+              Nach oben
+            </button>
+            <button
+              type="button"
+              class="btn btn--ghost poll-admin-list__move poll-admin-list__move--down"
+              [id]="'move-down-' + survey.id"
+              [attr.aria-label]="'Nach unten: ' + survey.title"
+              [disabled]="isLast"
+              (click)="move(survey, 1)"
+            >
+              Nach unten
+            </button>
           </div>
           <div class="poll-admin-list__actions">
             <button type="button" class="btn btn--secondary" (click)="toggleActive(survey)">

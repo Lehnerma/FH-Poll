@@ -33,6 +33,12 @@
     color: var(--color-text-muted);
   }
 
+  // Hoch/Runter-Buttons zum Festlegen der Reihenfolge (gilt auch für die User)
+  &__order {
+    display: flex;
+    gap: $space-2;
+  }
+
   &__actions {
     display: flex;
     flex-wrap: wrap;
