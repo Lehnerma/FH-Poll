@@ -6,3 +6,13 @@
 @use 'layout';
 @use 'components';
 @use 'pages';
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  box-sizing: border-box;
+}
