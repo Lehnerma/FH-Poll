@@ -25,6 +25,8 @@ export interface SurveySummary {
   readonly active: boolean;
   readonly questionCount: number;
   readonly createdAt: number;
+  /** Platz in der vom Admin festgelegten Reihenfolge (0 = ganz oben); null bei Altbestand. */
+  readonly position: number | null;
 }
 
 /** Eine entsperrte Umfrage mit Fragen (kommt über die Cloud Function `unlockSurvey`). */
@@ -83,7 +85,7 @@ export function toSummary(id: string, raw: unknown): SurveySummary | null {
   if (!isRecord(raw)) {
     return null;
   }
-  const { title, active, questionCount, createdAt } = raw;
+  const { title, active, questionCount, createdAt, position } = raw;
   if (typeof title !== 'string' || typeof active !== 'boolean') {
     return null;
   }
@@ -93,7 +95,70 @@ export function toSummary(id: string, raw: unknown): SurveySummary | null {
     active,
     questionCount: typeof questionCount === 'number' ? questionCount : 0,
     createdAt: typeof createdAt === 'number' ? createdAt : 0,
+    position: typeof position === 'number' ? position : null,
   };
+}
+
+/**
+ * Vergleicht zwei Umfragen nach `position`; Umfragen ohne `position` (Altbestand) kommen danach.
+ * @param a Erste Umfrage
+ * @param b Zweite Umfrage
+ * @returns Negativ, wenn `a` vor `b` steht, positiv im umgekehrten Fall, sonst 0
+ */
+function comparePosition(a: SurveySummary, b: SurveySummary): number {
+  if (a.position === b.position) {
+    return 0;
+  }
+  if (a.position === null) {
+    return 1;
+  }
+  if (b.position === null) {
+    return -1;
+  }
+  return a.position - b.position;
+}
+
+/**
+ * Bringt die Umfragen in die Reihenfolge der Listen: nach `position`, bei Gleichstand oder ohne
+ * `position` nach `createdAt` (älteste zuerst), zuletzt nach `id`, damit die Reihenfolge stabil bleibt.
+ * @param list Umfragen in beliebiger Reihenfolge
+ * @returns Sortierte Kopie
+ */
+export function sortSummaries(list: readonly SurveySummary[]): SurveySummary[] {
+  return [...list].sort(
+    (a, b) => comparePosition(a, b) || a.createdAt - b.createdAt || a.id.localeCompare(b.id),
+  );
+}
+
+/**
+ * Nummeriert die Umfragen in der gegebenen Reihenfolge von 0 an durch.
+ * @param list Umfragen in der gewünschten Reihenfolge
+ * @returns Kopie mit lückenlosem `position`
+ */
+export function withPositions(list: readonly SurveySummary[]): SurveySummary[] {
+  return list.map((survey, position) => ({ ...survey, position }));
+}
+
+/**
+ * Tauscht eine Umfrage mit ihrem Nachbarn.
+ * @param list Umfragen in der aktuellen Reihenfolge
+ * @param id Schlüssel der Umfrage, die verschoben wird
+ * @param step -1 = eine Stelle nach oben, 1 = eine Stelle nach unten
+ * @returns Neue, lückenlos nummerierte Reihenfolge oder null, wenn die Umfrage am Rand steht
+ */
+export function moveSurvey(
+  list: readonly SurveySummary[],
+  id: string,
+  step: -1 | 1,
+): SurveySummary[] | null {
+  const from = list.findIndex((survey) => survey.id === id);
+  const to = from + step;
+  if (from < 0 || to < 0 || to >= list.length) {
+    return null;
+  }
+  const reordered = [...list];
+  reordered.splice(to, 0, ...reordered.splice(from, 1));
+  return withPositions(reordered);
 }
 
 /**

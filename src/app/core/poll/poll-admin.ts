@@ -4,10 +4,12 @@ import { DB_ROOT } from '../../../environments/environment';
 import { callFunction } from '../firebase/call-function';
 import { FIREBASE_DATABASE, FIREBASE_FUNCTIONS } from '../firebase/firebase';
 import { PollPhotos } from './poll-photos';
+import { Polls } from './polls';
 import {
   SurveyPhoto,
   SurveyQuestion,
   SurveyResults,
+  SurveySummary,
   toQuestions,
   toResults,
   toSummary,
@@ -48,6 +50,7 @@ export class PollAdmin {
   private readonly database = inject(FIREBASE_DATABASE);
   private readonly functions = inject(FIREBASE_FUNCTIONS);
   private readonly photos = inject(PollPhotos);
+  private readonly polls = inject(Polls);
 
   /**
    * Lädt Titel und Fragen zum Bearbeiten.
@@ -66,16 +69,29 @@ export class PollAdmin {
 
   /**
    * Speichert eine Umfrage: lädt neue Fotos hoch, schreibt Liste und Fragen gemeinsam und
-   * löscht nicht mehr gebrauchte Fotos. Neue Umfragen starten inaktiv.
+   * löscht nicht mehr gebrauchte Fotos. Neue Umfragen starten inaktiv und stehen ganz unten;
+   * dafür werden die bestehenden Umfragen in ihrer aktuellen Reihenfolge durchnummeriert.
    * @param input Titel, Fragen und der Stand vor dem Bearbeiten
    * @returns Schlüssel der Umfrage
    */
   async save(input: SaveInput): Promise<string> {
     const id = input.id ?? crypto.randomUUID();
     const questions = await Promise.all(input.questions.map((draft) => this.toStored(id, draft)));
-    await update(ref(this.database, DB_ROOT.poll), this.changes(id, input, questions));
+    const existing = input.id ? [] : await this.polls.loadSummaries();
+    await update(ref(this.database, DB_ROOT.poll), {
+      ...this.changes(id, input, questions, existing.length),
+      ...this.positionChanges(existing),
+    });
     await this.photos.removeUnused(input.previous, questions);
     return id;
+  }
+
+  /**
+   * Speichert die Reihenfolge der Umfragen (alle Positionen gemeinsam, alles oder nichts).
+   * @param ordered Umfragen in der gewünschten Reihenfolge
+   */
+  async reorder(ordered: readonly SurveySummary[]): Promise<void> {
+    await update(ref(this.database, DB_ROOT.poll), this.positionChanges(ordered));
   }
 
   /**
@@ -143,36 +159,53 @@ export class PollAdmin {
    * @param id Schlüssel der Umfrage
    * @param input Eingabe von `save()`
    * @param questions Zu speichernde Fragen
+   * @param position Platz einer neuen Umfrage (ganz unten); bei bestehenden unbenutzt
    * @returns Pfad (relativ zu `poll`) → neuer Wert
    */
   private changes(
     id: string,
     input: SaveInput,
     questions: readonly SurveyQuestion[],
+    position: number,
   ): Record<string, unknown> {
     return {
       [`content/${id}`]: { questions },
-      ...this.summaryChanges(id, input, questions.length),
+      ...this.summaryChanges(id, input, questions.length, position),
     };
   }
 
   /**
-   * Änderungen an der Listen-Seite: neue Umfragen starten inaktiv, bei bestehenden
-   * bleiben `active` und `createdAt` unberührt.
+   * Änderungen an der Listen-Seite: neue Umfragen starten inaktiv und ganz unten, bei
+   * bestehenden bleiben `active`, `createdAt` und `position` unberührt.
    * @param id Schlüssel der Umfrage
    * @param input Eingabe von `save()`
    * @param questionCount Anzahl der Fragen
+   * @param position Platz einer neuen Umfrage
    * @returns Pfad (relativ zu `poll`) → neuer Wert
    */
   private summaryChanges(
     id: string,
     input: SaveInput,
     questionCount: number,
+    position: number,
   ): Record<string, unknown> {
     const title = input.title.trim();
     if (input.id) {
       return { [`surveys/${id}/title`]: title, [`surveys/${id}/questionCount`]: questionCount };
     }
-    return { [`surveys/${id}`]: { title, active: false, questionCount, createdAt: Date.now() } };
+    return {
+      [`surveys/${id}`]: { title, active: false, questionCount, createdAt: Date.now(), position },
+    };
+  }
+
+  /**
+   * Baut die Änderungen, die die Umfragen in der gegebenen Reihenfolge von 0 an nummerieren.
+   * @param ordered Umfragen in der gewünschten Reihenfolge
+   * @returns Pfad (relativ zu `poll`) → Position
+   */
+  private positionChanges(ordered: readonly SurveySummary[]): Record<string, number> {
+    return Object.fromEntries(
+      ordered.map((survey, position) => [`surveys/${survey.id}/position`, position]),
+    );
   }
 }

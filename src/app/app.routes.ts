@@ -1,11 +1,14 @@
 import { Routes } from '@angular/router';
 import { BOX_NUMBERS } from '../environments/environment';
-import { adminGuard, homeGuard, userGuard } from './core/session/session-guards';
+import { adminGuard, homeGuard, praxisGuard, userGuard } from './core/session/session-guards';
 
-/** Je Box eine feste Route (/box1 … /box4); die Nummer kommt als Route-Data ins Component-Input. */
+/**
+ * Je Box eine feste Route (/box1 … /box4); die Nummer kommt als Route-Data ins Component-Input.
+ * Für User gesperrt (`praxisGuard`).
+ */
 const boxRoutes: Routes = BOX_NUMBERS.map((box) => ({
   path: `box${box}`,
-  canActivate: [userGuard],
+  canActivate: [praxisGuard],
   data: { box },
   loadComponent: () => import('./features/box/box').then((m) => m.Box),
 }));
@@ -42,7 +45,7 @@ export const routes: Routes = [
   },
   {
     path: 'praxis',
-    canActivate: [userGuard],
+    canActivate: [praxisGuard],
     loadComponent: () => import('./features/praxis/praxis-boxes').then((m) => m.PraxisBoxes),
   },
   ...boxRoutes,

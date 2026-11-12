@@ -4,7 +4,14 @@ import { FunctionsError } from 'firebase/functions';
 import { DB_ROOT } from '../../../environments/environment';
 import { callFunction } from '../firebase/call-function';
 import { FIREBASE_DATABASE, FIREBASE_FUNCTIONS } from '../firebase/firebase';
-import { Survey, SurveyAnswers, SurveySummary, toSummary, toSurvey } from './survey';
+import {
+  Survey,
+  SurveyAnswers,
+  SurveySummary,
+  sortSummaries,
+  toSummary,
+  toSurvey,
+} from './survey';
 
 /** Warum eine Umfrage nicht geöffnet werden konnte. */
 export type AccessProblem = 'wrong' | 'locked' | 'closed' | 'not-configured' | 'not-found';
@@ -57,7 +64,7 @@ export class Polls {
 
   /**
    * Lädt alle Umfragen (auch geschlossene) für die Liste.
-   * @returns Umfragen, neueste zuerst
+   * @returns Umfragen in der vom Admin festgelegten Reihenfolge (siehe `sortSummaries`)
    */
   async loadSummaries(): Promise<SurveySummary[]> {
     const snapshot = await get(ref(this.database, `${DB_ROOT.poll}/surveys`));
@@ -68,7 +75,7 @@ export class Polls {
         surveys.push(summary);
       }
     });
-    return surveys.sort((a, b) => b.createdAt - a.createdAt);
+    return sortSummaries(surveys);
   }
 
   /**

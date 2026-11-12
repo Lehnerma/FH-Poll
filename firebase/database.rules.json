@@ -22,6 +22,9 @@
           "createdAt": {
             ".validate": "newData.isNumber()"
           },
+          "position": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
           "$other": {
             ".validate": false
           }

@@ -2,13 +2,29 @@ import { photoProblem } from './poll-photos';
 import {
   DEFAULT_OPTIONS,
   OPTION_COUNT,
+  SurveySummary,
+  moveSurvey,
   nicknameKey,
   percent,
+  sortSummaries,
   toQuestions,
   toResults,
   toSummary,
   toSurvey,
+  withPositions,
 } from './survey';
+
+const summary = (id: string, position: number | null, createdAt = 0): SurveySummary => ({
+  id,
+  title: `Umfrage ${id}`,
+  active: true,
+  questionCount: 1,
+  createdAt,
+  position,
+});
+
+const ids = (list: readonly SurveySummary[] | null): string[] | undefined =>
+  list?.map((survey) => survey.id);
 
 const rawQuestion = (id: string, extra: object = {}): object => ({
   id,
@@ -42,13 +58,86 @@ describe('survey', () => {
         active: true,
         questionCount: 5,
         createdAt: 10,
+        position: null,
       });
+    });
+
+    it('liest die Position, wenn der Admin die Reihenfolge festgelegt hat', () => {
+      const raw = { title: 'T', active: true, questionCount: 5, createdAt: 10, position: 2 };
+
+      expect(toSummary('s1', raw)?.position).toBe(2);
     });
 
     it('lehnt Einträge ohne Titel oder ohne aktiv-Status ab', () => {
       expect(toSummary('s1', { active: true })).toBeNull();
       expect(toSummary('s1', { title: 'T' })).toBeNull();
       expect(toSummary('s1', null)).toBeNull();
+    });
+  });
+
+  describe('sortSummaries', () => {
+    it('sortiert nach Position', () => {
+      const list = [summary('c', 2), summary('a', 0), summary('b', 1)];
+
+      expect(ids(sortSummaries(list))).toEqual(['a', 'b', 'c']);
+    });
+
+    it('stellt Altbestand ohne Position nach createdAt aufsteigend dar', () => {
+      const list = [summary('neu', null, 30), summary('alt', null, 10), summary('mitte', null, 20)];
+
+      expect(ids(sortSummaries(list))).toEqual(['alt', 'mitte', 'neu']);
+    });
+
+    it('setzt Umfragen ohne Position hinter die mit Position', () => {
+      const list = [summary('ohne', null, 1), summary('mit', 5, 99)];
+
+      expect(ids(sortSummaries(list))).toEqual(['mit', 'ohne']);
+    });
+
+    it('entscheidet bei gleicher Position nach createdAt', () => {
+      const list = [summary('spaet', 1, 20), summary('frueh', 1, 10)];
+
+      expect(ids(sortSummaries(list))).toEqual(['frueh', 'spaet']);
+    });
+
+    it('verändert die übergebene Liste nicht', () => {
+      const list = [summary('b', 1), summary('a', 0)];
+
+      sortSummaries(list);
+
+      expect(ids(list)).toEqual(['b', 'a']);
+    });
+  });
+
+  describe('withPositions', () => {
+    it('nummeriert lückenlos von 0 an in der gegebenen Reihenfolge', () => {
+      const result = withPositions([summary('x', 7), summary('y', null)]);
+
+      expect(result.map((survey) => survey.position)).toEqual([0, 1]);
+    });
+  });
+
+  describe('moveSurvey', () => {
+    const list = [summary('a', 0), summary('b', 1), summary('c', 2)];
+
+    it('schiebt eine Umfrage nach oben und nummeriert neu', () => {
+      const result = moveSurvey(list, 'b', -1);
+
+      expect(ids(result)).toEqual(['b', 'a', 'c']);
+      expect(result?.map((survey) => survey.position)).toEqual([0, 1, 2]);
+    });
+
+    it('schiebt eine Umfrage nach unten', () => {
+      expect(ids(moveSurvey(list, 'b', 1))).toEqual(['a', 'c', 'b']);
+    });
+
+    it('verschiebt nichts, wenn die Umfrage schon am Rand steht', () => {
+      expect(moveSurvey(list, 'a', -1)).toBeNull();
+      expect(moveSurvey(list, 'c', 1)).toBeNull();
+    });
+
+    it('verschiebt nichts bei unbekannter Umfrage', () => {
+      expect(moveSurvey(list, 'x', 1)).toBeNull();
     });
   });
 
