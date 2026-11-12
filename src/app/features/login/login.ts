@@ -7,6 +7,7 @@ import { Topbar } from '../../shared/topbar/topbar';
 @Component({
   selector: 'app-login',
   imports: [FormField, RouterLink, Topbar],
+  styleUrl: './login.scss',
   templateUrl: './login.html',
 })
 export class Login {

@@ -5,15 +5,7 @@ import { RouterLink } from '@angular/router';
   selector: 'app-topbar',
   imports: [RouterLink],
   styleUrl: './topbar.scss',
-  template: `
-    <header class="topbar">
-      <span class="topbar__brand">{{ title() }}</span>
-      @if (backLink(); as link) {
-        <a class="topbar__link" [routerLink]="link">← {{ backLabel() }}</a>
-      }
-      <ng-content />
-    </header>
-  `,
+  templateUrl: './topbar.html',
 })
 export class Topbar {
   readonly title = input.required<string>();

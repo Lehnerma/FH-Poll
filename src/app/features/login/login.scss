@@ -1,0 +1,12 @@
+@use '../../../styles/abstracts' as *;
+
+.grid {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 100dvh;
+
+  &--center {
+    justify-self: center;
+    align-self: center;
+  }
+}
