@@ -89,6 +89,13 @@
           <p class="card__text" aria-live="polite">
             {{ answeredCount() }} von {{ current.questions.length }} Fragen beantwortet
           </p>
+          <p class="card__text">
+            Beim Absenden werden dein Name „{{ nickname() }}“, deine Antworten und der Zeitpunkt
+            gespeichert.
+            <a class="legal__link" routerLink="/datenschutz" target="_blank" rel="noopener"
+              >Datenschutzerklärung (öffnet in neuem Tab)</a
+            >
+          </p>
           @if (failed()) {
             <p class="card__error" role="alert">
               Das hat nicht geklappt. Bitte versuche es erneut.

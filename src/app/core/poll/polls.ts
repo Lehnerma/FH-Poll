@@ -4,14 +4,7 @@ import { FunctionsError } from 'firebase/functions';
 import { DB_ROOT } from '../../../environments/environment';
 import { callFunction } from '../firebase/call-function';
 import { FIREBASE_DATABASE, FIREBASE_FUNCTIONS } from '../firebase/firebase';
-import {
-  Survey,
-  SurveyAnswers,
-  SurveySummary,
-  sortSummaries,
-  toSummary,
-  toSurvey,
-} from './survey';
+import { Survey, SurveyAnswers, SurveySummary, sortSummaries, toSummary, toSurvey } from './survey';
 
 /** Warum eine Umfrage nicht geöffnet werden konnte. */
 export type AccessProblem = 'wrong' | 'locked' | 'closed' | 'not-configured' | 'not-found';
