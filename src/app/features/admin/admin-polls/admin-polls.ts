@@ -58,8 +58,16 @@ export class AdminPolls {
     this.surveys.set(moved);
     this.announcement.set(`„${survey.title}“ ist jetzt Position ${index + 1} von ${moved.length}.`);
     this.restoreFocus(survey.id, step, index === 0 || index === moved.length - 1);
+    await this.saveOrder(moved);
+  }
+
+  /**
+   * Speichert die neue Reihenfolge; schlägt das fehl, erscheint eine Meldung und die Liste lädt neu.
+   * @param ordered Umfragen in der neuen Reihenfolge
+   */
+  private async saveOrder(ordered: readonly SurveySummary[]): Promise<void> {
     try {
-      await this.admin.reorder(moved);
+      await this.admin.reorder(ordered);
     } catch {
       this.actionFailed.set(true);
       this.surveys.reload();

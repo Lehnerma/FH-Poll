@@ -76,6 +76,22 @@ export function nicknameKey(name: string): string {
 }
 
 /**
+ * Liest die Zahlenfelder eines Listeneintrags; fehlende oder ungültige Werte bekommen einen Ersatz.
+ * @param raw Rohdaten
+ * @returns Fragenanzahl und Erstellzeit (Ersatz 0) sowie Position (Ersatz null)
+ */
+function toSummaryNumbers(
+  raw: Record<string, unknown>,
+): Pick<SurveySummary, 'questionCount' | 'createdAt' | 'position'> {
+  const { questionCount, createdAt, position } = raw;
+  return {
+    questionCount: typeof questionCount === 'number' ? questionCount : 0,
+    createdAt: typeof createdAt === 'number' ? createdAt : 0,
+    position: typeof position === 'number' ? position : null,
+  };
+}
+
+/**
  * Wandelt Rohdaten der Umfragenliste um.
  * @param id Schlüssel der Umfrage
  * @param raw Rohdaten
@@ -85,18 +101,11 @@ export function toSummary(id: string, raw: unknown): SurveySummary | null {
   if (!isRecord(raw)) {
     return null;
   }
-  const { title, active, questionCount, createdAt, position } = raw;
+  const { title, active } = raw;
   if (typeof title !== 'string' || typeof active !== 'boolean') {
     return null;
   }
-  return {
-    id,
-    title,
-    active,
-    questionCount: typeof questionCount === 'number' ? questionCount : 0,
-    createdAt: typeof createdAt === 'number' ? createdAt : 0,
-    position: typeof position === 'number' ? position : null,
-  };
+  return { id, title, active, ...toSummaryNumbers(raw) };
 }
 
 /**
