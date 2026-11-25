@@ -6,7 +6,11 @@
     <form class="card" (submit)="onSubmit(); $event.preventDefault()" novalidate>
       <span class="card__kicker">Willkommen</span>
       <h1 class="card__title">Wie dürfen wir dich nennen?</h1>
-      <p class="card__text">Dein Name bleibt nur auf diesem Gerät gespeichert.</p>
+      <p class="card__text">
+        Dein Name wird auf diesem Gerät gespeichert. Nimmst du an einer Umfrage teil, wird er
+        zusammen mit deinen Antworten auch auf dem Server gespeichert. Ein Nickname genügt.
+        <a class="legal__link" routerLink="/datenschutz">Datenschutzerklärung</a>
+      </p>
 
       <div class="field">
         <label class="field__label" for="nickname">Name / Nickname</label>

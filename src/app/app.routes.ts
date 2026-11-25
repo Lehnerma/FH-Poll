@@ -22,6 +22,16 @@ const adminBoxRoutes: Routes = BOX_NUMBERS.map((box) => ({
 export const routes: Routes = [
   { path: '', pathMatch: 'full', canActivate: [homeGuard], children: [] },
 
+  // Rechtliches: bewusst ohne Guard, muss ohne Login erreichbar sein.
+  {
+    path: 'impressum',
+    loadComponent: () => import('./features/legal/imprint/imprint').then((m) => m.Imprint),
+  },
+  {
+    path: 'datenschutz',
+    loadComponent: () => import('./features/legal/privacy/privacy').then((m) => m.Privacy),
+  },
+
   // User
   {
     path: 'login',

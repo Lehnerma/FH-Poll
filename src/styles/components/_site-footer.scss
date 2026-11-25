@@ -1,0 +1,23 @@
+@use '../abstracts' as *;
+
+.site-footer {
+  padding: $space-4;
+  font-size: rem(14px);
+  border-top: 2px solid var(--color-divider);
+
+  &__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-5;
+    justify-content: center;
+    list-style: none;
+  }
+
+  &__link {
+    color: inherit;
+
+    &--active {
+      font-weight: 700;
+    }
+  }
+}

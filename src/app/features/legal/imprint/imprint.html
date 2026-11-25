@@ -1,0 +1,62 @@
+<app-topbar title="Poll" backLink="/" backLabel="Startseite" />
+
+<main class="page legal">
+  <h1 class="page__title">Impressum</h1>
+  <p class="page__lead">Offenlegung gemäß § 25 Mediengesetz</p>
+
+  <section class="legal__section" aria-labelledby="imprint-owner">
+    <h2 class="legal__heading" id="imprint-owner">Medieninhaber und Herausgeber</h2>
+    <address class="legal__address">
+      {{ operator.name }}<br />
+      Wohnort: {{ operator.residence }}, {{ operator.country }}<br />
+      E-Mail:
+      <a class="legal__link" [href]="'mailto:' + operator.email">{{ operator.email }}</a
+      ><br />
+      Telefon:
+      <a class="legal__link" [href]="operator.phone.href">{{ operator.phone.label }}</a>
+    </address>
+  </section>
+
+  <section class="legal__section" aria-labelledby="imprint-purpose">
+    <h2 class="legal__heading" id="imprint-purpose">Gegenstand der Website</h2>
+    <p>
+      Private, nicht kommerzielle Webanwendung für passwortgeschützte Umfragen und zur Verwaltung
+      von Objektträgern.
+    </p>
+  </section>
+
+  <section class="legal__section" aria-labelledby="imprint-source">
+    <h2 class="legal__heading" id="imprint-source">Offener Quellcode</h2>
+    <p>
+      Der Quellcode dieses Projekts ist öffentlich auf GitHub einsehbar:
+      <a class="legal__link" [href]="repositoryUrl" rel="noopener noreferrer">{{
+        repositoryUrl
+      }}</a>
+    </p>
+  </section>
+
+  <section class="legal__section" aria-labelledby="imprint-ai">
+    <h2 class="legal__heading" id="imprint-ai">Einsatz von KI bei der Erstellung</h2>
+    <p>
+      Dieses Projekt wurde mit Unterstützung von Claude, einem KI-Assistenten von Anthropic,
+      erstellt. Die Verantwortung für die Website liegt beim Medieninhaber. Die laufende Anwendung
+      verwendet keine KI und übermittelt keine Daten an Anthropic.
+    </p>
+  </section>
+
+  <section class="legal__section" aria-labelledby="imprint-liability">
+    <h2 class="legal__heading" id="imprint-liability">Haftung für Inhalte und Links</h2>
+    <p>
+      Die Inhalte werden mit Sorgfalt erstellt. Für ihre Richtigkeit, Vollständigkeit und Aktualität
+      sowie für die ständige Verfügbarkeit der Website wird keine Gewähr übernommen. Zwingende
+      gesetzliche Haftungsbestimmungen bleiben davon unberührt.
+    </p>
+    <p>
+      Für die Inhalte verlinkter externer Websites sind ausschließlich deren Betreiber
+      verantwortlich. Wird mir eine Rechtsverletzung auf einer verlinkten Seite bekannt, entferne
+      ich den Link.
+    </p>
+  </section>
+
+  <p class="page__lead">Stand: {{ version }}</p>
+</main>
